@@ -1,0 +1,147 @@
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Shield, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
+
+const AdminLogin = () => {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const { addNotification } = useNotification();
+
+  const handleInputChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    // Simulate admin authentication
+    setTimeout(() => {
+      // Simple validation - in real app, this would be server-side
+      if (formData.email === 'admin@restaurant.com' && formData.password === 'admin123') {
+        const userData = {
+          name: 'Admin User',
+          email: formData.email,
+          role: 'admin'
+        };
+
+        login(userData, 'admin');
+        addNotification('Admin login successful!', 'success');
+        setIsLoading(false);
+        navigate('/admin');
+      } else {
+        addNotification('Invalid admin credentials', 'error');
+        setIsLoading(false);
+      }
+    }, 1500);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+      {/* Header */}
+      <header className="relative z-10 bg-white/10 backdrop-blur-md border-b border-white/20">
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <Link to="/" className="flex items-center space-x-2">
+              <ArrowLeft className="h-5 w-5 text-white" />
+              <Shield className="h-8 w-8 text-blue-400" />
+              <span className="text-2xl font-bold text-white">Admin Portal</span>
+            </Link>
+          </div>
+        </nav>
+      </header>
+
+      {/* Main Content */}
+      <div className="flex items-center justify-center min-h-[calc(100vh-80px)] px-4 py-12">
+        <div className="w-full max-w-md">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Shield className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-3xl font-bold text-white mb-2">Admin Access</h2>
+              <p className="text-gray-300">Secure login for restaurant administrators</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Admin Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm"
+                  placeholder="admin@restaurant.com"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm pr-12"
+                    placeholder="Enter admin password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                {isLoading ? 'Authenticating...' : 'Access Admin Panel'}
+              </button>
+            </form>
+
+            <div className="mt-6 p-4 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
+              <p className="text-yellow-200 text-sm">
+                <strong>Demo Credentials:</strong><br />
+                Email: admin@restaurant.com<br />
+                Password: admin123
+              </p>
+            </div>
+
+            <div className="mt-6 text-center">
+              <Link to="/" className="text-gray-400 hover:text-gray-300 text-sm transition-colors">
+                Back to Homepage
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AdminLogin;

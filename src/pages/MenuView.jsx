@@ -1,0 +1,238 @@
+import React, { useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useData } from '../context/DataContext';
+import { useNotification } from '../context/NotificationContext';
+import { ArrowLeft, Plus, Minus, ShoppingCart, Star, Leaf, Heart, Filter } from 'lucide-react';
+
+const MenuView = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { restaurants, getMenuItems, addToCart, cart } = useData();
+  const { addNotification } = useNotification();
+  
+  const restaurant = restaurants.find(r => r.id === parseInt(id));
+  const menuItems = getMenuItems(parseInt(id));
+  
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedDietary, setSelectedDietary] = useState('all');
+  const [itemQuantities, setItemQuantities] = useState({});
+
+  if (!restaurant) {
+    return <div>Restaurant not found</div>;
+  }
+
+  const categories = ['all', ...new Set(menuItems.map(item => item.category))];
+  const dietaryOptions = ['all', 'vegetarian', 'gluten-free', 'healthy'];
+
+  const filteredItems = menuItems.filter(item => {
+    const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
+    const matchesDietary = selectedDietary === 'all' || (item.dietary && item.dietary.includes(selectedDietary));
+    return matchesCategory && matchesDietary;
+  });
+
+  const updateQuantity = (itemId, change) => {
+    setItemQuantities(prev => ({
+      ...prev,
+      [itemId]: Math.max(0, (prev[itemId] || 0) + change)
+    }));
+  };
+
+  const handleAddToCart = (item) => {
+    const quantity = itemQuantities[item.id] || 1;
+    for (let i = 0; i < quantity; i++) {
+      addToCart(item, restaurant.id);
+    }
+    addNotification(`Added ${quantity}x ${item.name} to cart`, 'success');
+    setItemQuantities(prev => ({ ...prev, [item.id]: 0 }));
+  };
+
+  const totalCartItems = cart.length;
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <Link to="/dashboard" className="flex items-center space-x-2 text-gray-600 hover:text-gray-900">
+              <ArrowLeft className="w-5 h-5" />
+              <span>Back to Dashboard</span>
+            </Link>
+            
+            {totalCartItems > 0 && (
+              <Link
+                to={`/restaurant/${id}/preorder`}
+                className="flex items-center space-x-2 bg-gradient-to-r from-orange-500 to-pink-500 text-white px-4 py-2 rounded-lg hover:from-orange-600 hover:to-pink-600 transition-all duration-300"
+              >
+                <ShoppingCart className="w-5 h-5" />
+                <span>Cart ({totalCartItems})</span>
+              </Link>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Restaurant Header */}
+      <div className="relative h-64 bg-gradient-to-r from-slate-900 to-slate-700">
+        <img
+          src={restaurant.image}
+          alt={restaurant.name}
+          className="w-full h-full object-cover opacity-30"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+        <div className="absolute bottom-6 left-0 right-0">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 className="text-4xl font-bold text-white mb-2">{restaurant.name}</h1>
+            <div className="flex items-center space-x-4 text-white/90">
+              <div className="flex items-center space-x-1">
+                <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                <span>{restaurant.rating}</span>
+              </div>
+              <span>•</span>
+              <span>{restaurant.cuisine}</span>
+              <span>•</span>
+              <span>{restaurant.address}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white border-b sticky top-16 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex items-center space-x-2">
+              <Filter className="w-5 h-5 text-gray-500" />
+              <span className="text-gray-700 font-medium">Categories:</span>
+              <div className="flex space-x-2 overflow-x-auto">
+                {categories.map(category => (
+                  <button
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+                      selectedCategory === category
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {category === 'all' ? 'All Categories' : category}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-700 font-medium">Dietary:</span>
+              <div className="flex space-x-2 overflow-x-auto">
+                {dietaryOptions.map(option => (
+                  <button
+                    key={option}
+                    onClick={() => setSelectedDietary(option)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+                      selectedDietary === option
+                        ? 'bg-green-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {option === 'all' ? 'All Options' : option}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Menu Items */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredItems.map(item => (
+            <div key={item.id} className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
+              {item.chef_special && (
+                <div className="bg-gradient-to-r from-orange-500 to-pink-500 text-white text-center py-2 text-sm font-medium">
+                  🌟 Chef's Special
+                </div>
+              )}
+              
+              <div className="relative">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-full h-48 object-cover"
+                />
+                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full">
+                  <span className="font-bold text-green-600">${item.price}</span>
+                </div>
+                
+                {item.dietary && (
+                  <div className="absolute bottom-4 left-4 flex space-x-2">
+                    {item.dietary.includes('vegetarian') && (
+                      <div className="bg-green-500 text-white p-1 rounded-full" title="Vegetarian">
+                        <Leaf className="w-3 h-3" />
+                      </div>
+                    )}
+                    {item.dietary.includes('gluten-free') && (
+                      <div className="bg-blue-500 text-white p-1 rounded-full text-xs font-bold" title="Gluten Free">
+                        GF
+                      </div>
+                    )}
+                    {item.dietary.includes('healthy') && (
+                      <div className="bg-pink-500 text-white p-1 rounded-full" title="Healthy">
+                        <Heart className="w-3 h-3" />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{item.name}</h3>
+                <p className="text-gray-600 mb-4 text-sm leading-relaxed">{item.description}</p>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => updateQuantity(item.id, -1)}
+                      className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
+                      disabled={!itemQuantities[item.id]}
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                    <span className="w-8 text-center font-semibold">
+                      {itemQuantities[item.id] || 0}
+                    </span>
+                    <button
+                      onClick={() => updateQuantity(item.id, 1)}
+                      className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+                  
+                  <button
+                    onClick={() => handleAddToCart(item)}
+                    disabled={!itemQuantities[item.id]}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center space-x-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {filteredItems.length === 0 && (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">🍽️</div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No items found</h3>
+            <p className="text-gray-600">Try adjusting your category or dietary filters</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default MenuView;

@@ -6,23 +6,23 @@ const HomePage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Header */}
-      <header className="relative z-10 bg-white/10 backdrop-blur-md border-b border-white/20">
+      <header className="relative z-10 bg-white/10 backdrop-blur-md border-b border-white/20 sticky top-0">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
+          <div className="flex justify-between items-center py-4 md:py-6">
             <div className="flex items-center space-x-2">
-              <ChefHat className="h-8 w-8 text-orange-400" />
-              <span className="text-2xl font-bold text-white">RestaurantAI</span>
+              <ChefHat className="h-6 w-6 md:h-8 md:w-8 text-orange-400" />
+              <span className="text-lg md:text-2xl font-bold text-white">RestaurantAI</span>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 md:space-x-4">
               <Link
                 to="/login"
-                className="px-6 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all duration-300 backdrop-blur-sm border border-white/20"
+                className="px-3 py-2 md:px-6 md:py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all duration-300 backdrop-blur-sm border border-white/20 text-sm md:text-base"
               >
-                Customer Login
+                <span className="hidden sm:inline">Customer </span>Login
               </Link>
               <Link
                 to="/login"
-                className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg"
+                className="px-3 py-2 md:px-6 md:py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg text-sm md:text-base"
               >
                 Sign Up
               </Link>
@@ -32,29 +32,29 @@ const HomePage = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center">
+      <section className="relative min-h-screen flex items-center justify-center px-4">
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/40"></div>
         <div className="relative z-10 text-center max-w-4xl mx-auto px-4">
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight">
             Experience
             <span className="bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text text-transparent"> Dining</span>
             <br />Redefined
           </h1>
-          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
             Discover exceptional restaurants, book tables instantly, and enjoy AI-powered personalized dining experiences
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
               to="/login"
-              className="px-8 py-4 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-lg hover:from-orange-600 hover:to-pink-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center space-x-2"
+              className="w-full sm:w-auto px-6 py-3 md:px-8 md:py-4 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-lg hover:from-orange-600 hover:to-pink-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center space-x-2"
             >
               <Calendar className="w-5 h-5" />
               <span className="font-semibold">Book a Table</span>
             </Link>
             <Link
               to="/login"
-              className="px-8 py-4 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all duration-300 backdrop-blur-sm border border-white/20 flex items-center space-x-2"
+              className="w-full sm:w-auto px-6 py-3 md:px-8 md:py-4 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all duration-300 backdrop-blur-sm border border-white/20 flex items-center justify-center space-x-2"
             >
               <Menu className="w-5 h-5" />
               <span className="font-semibold">Explore Our Menu</span>
@@ -64,19 +64,19 @@ const HomePage = () => {
 
         {/* Floating Cards */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 bg-white/10 backdrop-blur-sm rounded-lg p-4 animate-float">
+          <div className="hidden md:block absolute top-20 left-10 bg-white/10 backdrop-blur-sm rounded-lg p-4 animate-float">
             <div className="flex items-center space-x-2 text-white">
               <Star className="w-5 h-5 text-yellow-400" />
               <span className="font-semibold">4.8 Rating</span>
             </div>
           </div>
-          <div className="absolute top-40 right-20 bg-white/10 backdrop-blur-sm rounded-lg p-4 animate-float" style={{ animationDelay: '1s' }}>
+          <div className="hidden md:block absolute top-40 right-20 bg-white/10 backdrop-blur-sm rounded-lg p-4 animate-float" style={{ animationDelay: '1s' }}>
             <div className="flex items-center space-x-2 text-white">
               <Users className="w-5 h-5 text-blue-400" />
               <span className="font-semibold">50K+ Customers</span>
             </div>
           </div>
-          <div className="absolute bottom-40 left-20 bg-white/10 backdrop-blur-sm rounded-lg p-4 animate-float" style={{ animationDelay: '2s' }}>
+          <div className="hidden md:block absolute bottom-40 left-20 bg-white/10 backdrop-blur-sm rounded-lg p-4 animate-float" style={{ animationDelay: '2s' }}>
             <div className="flex items-center space-x-2 text-white">
               <ChefHat className="w-5 h-5 text-orange-400" />
               <span className="font-semibold">50+ Restaurants</span>
@@ -86,16 +86,16 @@ const HomePage = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-white/5 backdrop-blur-sm">
+      <section className="py-12 md:py-20 bg-white/5 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">Why Choose RestaurantAI?</h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-2xl md:text-4xl font-bold text-white mb-4">Why Choose RestaurantAI?</h2>
+            <p className="text-base md:text-xl text-gray-300 max-w-3xl mx-auto">
               Experience the future of dining with our AI-powered platform that makes every meal memorable
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {[
               {
                 icon: Calendar,

@@ -6,7 +6,7 @@ const ProtectedRoute = ({ children, role }) => {
   const { isAuthenticated, role: userRole } = useAuth();
 
   if (!isAuthenticated) {
-    if (role === 'admin') return <Navigate to="/admin-portal-secure" replace />;
+    if (role === 'admin') return <Navigate to="/admin-dashboard-secret-portal-2025" replace />;
     if (role === 'superadmin') return <Navigate to="/super-admin-control" replace />;
     return <Navigate to="/login" replace />;
   }

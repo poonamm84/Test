@@ -52,7 +52,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<CustomerLogin />} />
-                <Route path="/admin-portal-secure" element={<AdminLogin />} />
+                <Route path="/admin-dashboard-secret-portal-2025" element={<AdminLogin />} />
                 <Route path="/super-admin-control" element={<SuperAdminLogin />} />
                 
                 <Route path="/dashboard" element={

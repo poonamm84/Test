@@ -117,22 +117,40 @@ const BookingView = () => {
             </div>
 
             {/* Table Layout */}
-            <div className="relative bg-gray-100 rounded-lg p-8 min-h-[400px]">
+            <div className="relative bg-gray-100 rounded-lg p-4 md:p-8 min-h-[300px] md:min-h-[400px] overflow-auto">
               {restaurant.tables.map(table => (
-                <button
+                <div
                   key={table.id}
-                  className={`absolute w-12 h-12 rounded-lg text-white font-semibold text-sm transition-all transform hover:scale-110 ${
-                    getTableColor(table.status)
-                  } ${selectedTable?.id === table.id ? 'ring-4 ring-blue-500' : ''} ${
-                    table.status !== 'available' ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
-                  }`}
-                  style={{ left: table.x, top: table.y }}
-                  onClick={() => handleTableSelect(table)}
-                  disabled={table.status !== 'available'}
-                  title={`Table ${table.number} - ${getTableStatus(table.status)} - ${table.capacity} seats`}
+                  className="absolute"
+                  style={{ 
+                    left: `${Math.min(table.x, 85)}%`, 
+                    top: `${Math.min(table.y, 85)}%`,
+                    transform: 'translate(-50%, -50%)'
+                  }}
                 >
-                  {table.number}
-                </button>
+                  <button
+                    className={`relative w-16 h-16 md:w-20 md:h-20 rounded-lg text-white font-semibold text-xs md:text-sm transition-all transform hover:scale-110 ${
+                      getTableColor(table.status)
+                    } ${selectedTable?.id === table.id ? 'ring-4 ring-blue-500' : ''} ${
+                      table.status !== 'available' ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
+                    } overflow-hidden`}
+                    onClick={() => handleTableSelect(table)}
+                    disabled={table.status !== 'available'}
+                    title={`Table ${table.number} - ${getTableStatus(table.status)} - ${table.capacity} seats`}
+                  >
+                    {table.status === 'available' && (
+                      <img
+                        src={`https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop`}
+                        alt={`Table ${table.number}`}
+                        className="absolute inset-0 w-full h-full object-cover opacity-30"
+                      />
+                    )}
+                    <div className="relative z-10 flex flex-col items-center justify-center h-full">
+                      <span className="text-lg font-bold">{table.number}</span>
+                      <span className="text-xs">{table.capacity}p</span>
+                    </div>
+                  </button>
+                </div>
               ))}
             </div>
 

@@ -71,8 +71,11 @@ const AdminLogin = () => {
               <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Shield className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-3xl font-bold text-white mb-2">Admin Access</h2>
-              <p className="text-gray-300">Secure login for restaurant administrators</p>
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">Admin Access</h2>
+              <p className="text-gray-300 text-sm md:text-base">Secure login for restaurant administrators</p>
+              <div className="mt-2 px-3 py-1 bg-blue-500/20 border border-blue-500/30 rounded-full">
+                <p className="text-blue-200 text-xs">Secret URL: /admin-dashboard-secret-portal-2025</p>
+              </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">

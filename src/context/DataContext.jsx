@@ -26,8 +26,9 @@ const mockRestaurants = [
       number: i + 1,
       capacity: [2, 4, 6, 8][Math.floor(Math.random() * 4)],
       status: ['available', 'reserved', 'occupied', 'cleaning'][Math.floor(Math.random() * 4)],
-      x: (i % 5) * 80 + 50,
-      y: Math.floor(i / 5) * 80 + 50
+      x: (i % 5) * 18 + 10,
+      y: Math.floor(i / 5) * 20 + 10,
+      image: `https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=center`
     }))
   },
   {
@@ -44,8 +45,9 @@ const mockRestaurants = [
       number: i + 1,
       capacity: [2, 4, 6][Math.floor(Math.random() * 3)],
       status: ['available', 'reserved', 'occupied', 'cleaning'][Math.floor(Math.random() * 4)],
-      x: (i % 5) * 80 + 50,
-      y: Math.floor(i / 5) * 80 + 50
+      x: (i % 5) * 18 + 10,
+      y: Math.floor(i / 5) * 20 + 10,
+      image: `https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=center`
     }))
   },
   {
@@ -62,8 +64,9 @@ const mockRestaurants = [
       number: i + 1,
       capacity: [2, 4, 6, 8][Math.floor(Math.random() * 4)],
       status: ['available', 'reserved', 'occupied', 'cleaning'][Math.floor(Math.random() * 4)],
-      x: (i % 6) * 70 + 40,
-      y: Math.floor(i / 6) * 70 + 40
+      x: (i % 6) * 15 + 8,
+      y: Math.floor(i / 6) * 18 + 8,
+      image: `https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=center`
     }))
   }
 ];
@@ -79,7 +82,8 @@ const mockMenuItems = {
       description: "Premium wagyu beef with truffle sauce and seasonal vegetables",
       image: "https://images.pexels.com/photos/361184/asparagus-steak-veal-steak-veal-361184.jpeg",
       dietary: ["gluten-free"],
-      chef_special: true
+      chef_special: true,
+      available: true
     },
     {
       id: 2,
@@ -88,7 +92,8 @@ const mockMenuItems = {
       price: 32.99,
       description: "Fresh Atlantic salmon with lemon herb butter and quinoa",
       image: "https://images.pexels.com/photos/262959/pexels-photo-262959.jpeg",
-      dietary: ["gluten-free", "healthy"]
+      dietary: ["gluten-free", "healthy"],
+      available: true
     },
     {
       id: 3,
@@ -97,7 +102,91 @@ const mockMenuItems = {
       price: 18.99,
       description: "Crispy risotto balls with black truffle and parmesan",
       image: "https://images.pexels.com/photos/4518843/pexels-photo-4518843.jpeg",
-      dietary: ["vegetarian"]
+      dietary: ["vegetarian"],
+      available: true
+    },
+    {
+      id: 4,
+      name: "Lobster Thermidor",
+      category: "Mains",
+      price: 65.99,
+      description: "Fresh lobster with creamy cognac sauce and herbs",
+      image: "https://images.pexels.com/photos/725991/pexels-photo-725991.jpeg",
+      dietary: ["gluten-free"],
+      available: true
+    },
+    {
+      id: 5,
+      name: "Chocolate Soufflé",
+      category: "Desserts",
+      price: 16.99,
+      description: "Warm chocolate soufflé with vanilla ice cream",
+      image: "https://images.pexels.com/photos/291528/pexels-photo-291528.jpeg",
+      dietary: ["vegetarian"],
+      available: true
+    }
+  ],
+  2: [
+    {
+      id: 6,
+      name: "Sashimi Platter",
+      category: "Sashimi",
+      price: 45.99,
+      description: "Fresh selection of tuna, salmon, and yellowtail",
+      image: "https://images.pexels.com/photos/357756/pexels-photo-357756.jpeg",
+      dietary: ["gluten-free", "healthy"],
+      available: true
+    },
+    {
+      id: 7,
+      name: "Dragon Roll",
+      category: "Sushi",
+      price: 18.99,
+      description: "Eel and cucumber topped with avocado and eel sauce",
+      image: "https://images.pexels.com/photos/2098085/pexels-photo-2098085.jpeg",
+      available: true
+    },
+    {
+      id: 8,
+      name: "Miso Soup",
+      category: "Starters",
+      price: 6.99,
+      description: "Traditional soybean paste soup with tofu and seaweed",
+      image: "https://images.pexels.com/photos/5409751/pexels-photo-5409751.jpeg",
+      dietary: ["vegetarian", "healthy"],
+      available: true
+    }
+  ],
+  3: [
+    {
+      id: 9,
+      name: "Margherita Pizza",
+      category: "Pizza",
+      price: 22.99,
+      description: "Fresh mozzarella, tomato sauce, and basil",
+      image: "https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg",
+      dietary: ["vegetarian"],
+      available: true
+    },
+    {
+      id: 10,
+      name: "Fettuccine Alfredo",
+      category: "Pasta",
+      price: 19.99,
+      description: "Creamy parmesan sauce with fresh fettuccine",
+      image: "https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg",
+      dietary: ["vegetarian"],
+      available: true
+    },
+    {
+      id: 11,
+      name: "Tiramisu",
+      category: "Desserts",
+      price: 12.99,
+      description: "Classic Italian dessert with coffee and mascarpone",
+      image: "https://images.pexels.com/photos/6880219/pexels-photo-6880219.jpeg",
+      dietary: ["vegetarian"],
+      available: true
     }
   ]
 };

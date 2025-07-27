@@ -1,18 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageCircle, Send, Mic, MicOff, X, Minimize2, Maximize2, Volume2, VolumeX } from 'lucide-react';
+import { MessageCircle, Send, Mic, MicOff, X, Minimize2, Maximize2, Volume2, VolumeX, Bot, User } from 'lucide-react';
 
 const AIChat = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState([
-    { id: 1, text: "Hello! I'm your AI assistant with voice capabilities. How can I help you today?", sender: 'ai', timestamp: new Date() }
+    { id: 1, text: "Hello! I'm your AI restaurant assistant. I can help you with bookings, menu recommendations, dietary preferences, and answer questions about our restaurants. How can I assist you today?", sender: 'ai', timestamp: new Date() }
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
-  const [position, setPosition] = useState({ x: window.innerWidth - 420, y: 100 });
+  const [position, setPosition] = useState({ 
+    x: typeof window !== 'undefined' ? Math.max(20, window.innerWidth - 420) : 20, 
+    y: 100 
+  });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   
@@ -36,22 +39,81 @@ const AIChat = () => {
     }
   }, []);
 
-  const mockAIResponses = [
-    "I'd be happy to help you with your reservation! What date and time are you looking for?",
-    "Our chef's special today is the Wagyu Beef Tenderloin - it's absolutely amazing! Would you like me to add it to your order?",
-    "Based on your preferences, I recommend trying our Pan-Seared Salmon or the Truffle Arancini. Both are customer favorites!",
-    "I can help you find the perfect table for your party. How many guests will be joining you tonight?",
-    "Would you like me to check our availability for tonight? We have some great tables available with beautiful views.",
-    "Our menu features fresh, locally-sourced ingredients. What type of cuisine are you in the mood for today?",
-    "I can assist with dietary restrictions. Are you looking for vegetarian, gluten-free, or other specific options?",
-    "Let me help you create the perfect dining experience. I can also make personalized recommendations based on your taste preferences!",
-    "I can help you with real-time table booking, menu recommendations, or answer any questions about our restaurants. What interests you most?",
-    "Would you like me to walk you through our pre-order system? You can customize your meal and have it ready when you arrive!"
-  ];
+  // Responsive positioning
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobile = window.innerWidth < 768;
+      if (isMobile) {
+        setPosition({ x: 10, y: 10 });
+      } else {
+        setPosition({ x: Math.max(20, window.innerWidth - 420), y: 100 });
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Enhanced AI responses with context awareness
+  const getContextualResponse = (userMessage) => {
+    const message = userMessage.toLowerCase();
+    
+    // Booking related
+    if (message.includes('book') || message.includes('reservation') || message.includes('table')) {
+      return "I'd be happy to help you book a table! I can check availability for any of our partner restaurants. Which restaurant interests you, and what date and time would you prefer? I can also suggest the best tables based on your party size.";
+    }
+    
+    // Menu and food related
+    if (message.includes('menu') || message.includes('food') || message.includes('dish') || message.includes('eat')) {
+      return "Great choice! I can help you explore our restaurant menus. Are you looking for a specific cuisine type? I can also provide personalized recommendations based on dietary preferences, allergies, or your taste profile. What type of dining experience are you in the mood for?";
+    }
+    
+    // Dietary restrictions
+    if (message.includes('vegetarian') || message.includes('vegan') || message.includes('gluten') || message.includes('allergy')) {
+      return "I understand dietary requirements are important! I can filter all our restaurant options and menu items based on your specific needs. We have excellent vegetarian, vegan, gluten-free, and allergy-friendly options. What dietary preferences should I keep in mind for your recommendations?";
+    }
+    
+    // Restaurant recommendations
+    if (message.includes('recommend') || message.includes('suggest') || message.includes('best')) {
+      return "I'd love to recommend the perfect restaurant for you! To give you the best suggestions, could you tell me: What type of cuisine do you prefer? What's your budget range? Are you looking for a romantic dinner, family meal, or business lunch? Any specific location preferences?";
+    }
+    
+    // Pricing and budget
+    if (message.includes('price') || message.includes('cost') || message.includes('budget') || message.includes('expensive')) {
+      return "I can help you find restaurants that fit your budget perfectly! Our partner restaurants range from casual dining to fine dining experiences. What's your preferred price range per person? I can show you great options with transparent pricing and no hidden fees.";
+    }
+    
+    // Location and directions
+    if (message.includes('location') || message.includes('address') || message.includes('direction') || message.includes('near')) {
+      return "I can help you find restaurants in your preferred area! Are you looking for something nearby, or do you have a specific neighborhood in mind? I can also provide directions and estimated travel times to any of our partner restaurants.";
+    }
+    
+    // Hours and availability
+    if (message.includes('open') || message.includes('hours') || message.includes('time') || message.includes('available')) {
+      return "I can check real-time availability and operating hours for all our restaurants! Most of our partners are open for lunch and dinner, with some offering breakfast and late-night dining. Which restaurant are you interested in, and what time were you planning to visit?";
+    }
+    
+    // Special occasions
+    if (message.includes('birthday') || message.includes('anniversary') || message.includes('celebration') || message.includes('special')) {
+      return "How wonderful! I'd love to help make your special occasion memorable. I can recommend restaurants with romantic ambiance, private dining rooms, or special celebration packages. Many of our partners offer complimentary desserts for birthdays and anniversaries. What's the occasion, and how many guests will be joining you?";
+    }
+    
+    // Default responses for general queries
+    const defaultResponses = [
+      "I'm here to make your dining experience exceptional! I can help with restaurant recommendations, table bookings, menu exploration, dietary accommodations, and special requests. What would you like to know more about?",
+      "As your AI dining assistant, I have access to real-time information about all our partner restaurants. I can help you discover new cuisines, find the perfect ambiance, and ensure your dietary needs are met. How can I assist you today?",
+      "I'm designed to understand your dining preferences and provide personalized recommendations. Whether you're looking for a quick bite, romantic dinner, or family celebration, I can guide you to the perfect restaurant experience. What are you in the mood for?",
+      "I can help you navigate our extensive network of restaurants with intelligent recommendations based on your preferences, location, budget, and dietary needs. I also provide real-time availability and can assist with special requests. What would you like to explore?",
+      "My goal is to connect you with the perfect dining experience! I can suggest restaurants, help with bookings, explain menu items, accommodate dietary restrictions, and even help plan special celebrations. What dining experience are you looking for today?"
+    ];
+    
+    return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+  };
 
   const speakText = (text) => {
     if (voiceEnabled && synthRef.current && 'speechSynthesis' in window) {
-      // Cancel any ongoing speech
       synthRef.current.cancel();
       
       const utterance = new SpeechSynthesisUtterance(text);
@@ -78,23 +140,23 @@ const AIChat = () => {
     };
 
     setMessages(prev => [...prev, newMessage]);
+    const currentInput = inputMessage;
     setInputMessage('');
     setIsTyping(true);
 
-    // Simulate AI processing time
+    // Generate contextual response
     setTimeout(() => {
       const aiResponse = {
         id: messages.length + 2,
-        text: mockAIResponses[Math.floor(Math.random() * mockAIResponses.length)],
+        text: getContextualResponse(currentInput),
         sender: 'ai',
         timestamp: new Date()
       };
       setMessages(prev => [...prev, aiResponse]);
       setIsTyping(false);
       
-      // Speak the AI response
       speakText(aiResponse.text);
-    }, 1500);
+    }, 1000 + Math.random() * 1000);
   };
 
   const handleVoiceInput = () => {
@@ -160,9 +222,13 @@ const AIChat = () => {
 
   const handleMouseMove = (e) => {
     if (isDragging) {
+      const isMobile = window.innerWidth < 768;
+      const maxX = window.innerWidth - (isMobile ? 320 : 400);
+      const maxY = window.innerHeight - (isMinimized ? 70 : 550);
+      
       setPosition({
-        x: Math.max(0, Math.min(window.innerWidth - 400, e.clientX - dragOffset.x)),
-        y: Math.max(0, Math.min(window.innerHeight - 500, e.clientY - dragOffset.y))
+        x: Math.max(0, Math.min(maxX, e.clientX - dragOffset.x)),
+        y: Math.max(0, Math.min(maxY, e.clientY - dragOffset.y))
       });
     }
   };
@@ -183,14 +249,16 @@ const AIChat = () => {
     };
   }, [isDragging, dragOffset]);
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   if (!isOpen) {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 z-50 animate-pulse"
+        className={`fixed ${isMobile ? 'bottom-4 right-4' : 'bottom-6 right-6'} bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 md:p-4 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 z-50 animate-pulse`}
       >
-        <MessageCircle className="w-6 h-6" />
-        <div className="absolute -top-2 -right-2 w-4 h-4 bg-green-500 rounded-full animate-ping"></div>
+        <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />
+        <div className="absolute -top-1 -right-1 w-3 h-3 md:w-4 md:h-4 bg-green-500 rounded-full animate-ping"></div>
       </button>
     );
   }
@@ -202,44 +270,45 @@ const AIChat = () => {
       style={{
         left: position.x,
         top: position.y,
-        width: isMinimized ? '320px' : '400px',
-        height: isMinimized ? '70px' : '550px'
+        width: isMobile ? '90vw' : (isMinimized ? '320px' : '400px'),
+        height: isMinimized ? '70px' : (isMobile ? '80vh' : '550px'),
+        maxWidth: isMobile ? '350px' : '400px'
       }}
     >
       {/* Header */}
       <div
-        className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-t-2xl cursor-move flex items-center justify-between"
+        className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 md:p-4 rounded-t-2xl cursor-move flex items-center justify-between"
         onMouseDown={handleMouseDown}
       >
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2 md:space-x-3">
           <div className="relative">
-            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-            <div className="absolute inset-0 w-3 h-3 bg-green-400 rounded-full animate-ping"></div>
+            <Bot className="w-5 h-5 md:w-6 md:h-6 text-white" />
+            <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
           </div>
           <div>
-            <h3 className="font-semibold">AI Assistant</h3>
-            <p className="text-xs text-blue-100">Voice & Text Enabled</p>
+            <h3 className="font-semibold text-sm md:text-base">AI Restaurant Assistant</h3>
+            <p className="text-xs text-blue-100">Smart Dining Helper</p>
           </div>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1 md:space-x-2">
           <button
             onClick={toggleVoice}
             className="text-white hover:text-gray-200 transition-colors p-1"
             title={voiceEnabled ? "Disable Voice" : "Enable Voice"}
           >
-            {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            {voiceEnabled ? <Volume2 className="w-3 h-3 md:w-4 md:h-4" /> : <VolumeX className="w-3 h-3 md:w-4 md:h-4" />}
           </button>
           <button
             onClick={() => setIsMinimized(!isMinimized)}
             className="text-white hover:text-gray-200 transition-colors"
           >
-            {isMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
+            {isMinimized ? <Maximize2 className="w-3 h-3 md:w-4 md:h-4" /> : <Minimize2 className="w-3 h-3 md:w-4 md:h-4" />}
           </button>
           <button
             onClick={() => setIsOpen(false)}
             className="text-white hover:text-gray-200 transition-colors"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3 h-3 md:w-4 md:h-4" />
           </button>
         </div>
       </div>
@@ -247,34 +316,49 @@ const AIChat = () => {
       {!isMinimized && (
         <>
           {/* Messages */}
-          <div className="flex-1 p-4 space-y-4 max-h-96 overflow-y-auto bg-gradient-to-b from-white/5 to-white/10">
+          <div className="flex-1 p-3 md:p-4 space-y-3 md:space-y-4 overflow-y-auto bg-gradient-to-b from-white/5 to-white/10" style={{ height: isMobile ? 'calc(80vh - 140px)' : '380px' }}>
             {messages.map((message) => (
               <div
                 key={message.id}
                 className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div
-                  className={`max-w-xs p-3 rounded-2xl backdrop-blur-sm border ${
-                    message.sender === 'user'
-                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white border-blue-500/30'
-                      : 'bg-white/20 text-white border-white/30'
-                  } shadow-lg`}
-                >
-                  <p className="text-sm leading-relaxed">{message.text}</p>
-                  <p className="text-xs opacity-70 mt-2">
-                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
+                <div className={`flex items-start space-x-2 max-w-[85%] ${message.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    message.sender === 'user' ? 'bg-blue-600' : 'bg-purple-600'
+                  }`}>
+                    {message.sender === 'user' ? 
+                      <User className="w-3 h-3 text-white" /> : 
+                      <Bot className="w-3 h-3 text-white" />
+                    }
+                  </div>
+                  <div
+                    className={`p-3 rounded-2xl backdrop-blur-sm border shadow-lg ${
+                      message.sender === 'user'
+                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white border-blue-500/30'
+                        : 'bg-white/20 text-white border-white/30'
+                    }`}
+                  >
+                    <p className="text-xs md:text-sm leading-relaxed">{message.text}</p>
+                    <p className="text-xs opacity-70 mt-2">
+                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
                 </div>
               </div>
             ))}
             
             {isTyping && (
               <div className="flex justify-start">
-                <div className="bg-white/20 backdrop-blur-sm text-white p-3 rounded-2xl border border-white/30 shadow-lg">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="flex items-start space-x-2">
+                  <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center">
+                    <Bot className="w-3 h-3 text-white" />
+                  </div>
+                  <div className="bg-white/20 backdrop-blur-sm text-white p-3 rounded-2xl border border-white/30 shadow-lg">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -282,10 +366,14 @@ const AIChat = () => {
 
             {isSpeaking && (
               <div className="flex justify-start">
-                <div className="bg-green-500/20 backdrop-blur-sm text-green-200 p-3 rounded-2xl border border-green-500/30 shadow-lg">
-                  <div className="flex items-center space-x-2">
-                    <Volume2 className="w-4 h-4 animate-pulse" />
-                    <span className="text-sm">Speaking...</span>
+                <div className="flex items-start space-x-2">
+                  <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
+                    <Volume2 className="w-3 h-3 text-white animate-pulse" />
+                  </div>
+                  <div className="bg-green-500/20 backdrop-blur-sm text-green-200 p-3 rounded-2xl border border-green-500/30 shadow-lg">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs md:text-sm">Speaking...</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -295,33 +383,33 @@ const AIChat = () => {
           </div>
 
           {/* Input */}
-          <div className="p-4 bg-white/10 backdrop-blur-sm border-t border-white/20">
+          <div className="p-3 md:p-4 bg-white/10 backdrop-blur-sm border-t border-white/20">
             <div className="flex items-center space-x-2">
               <input
                 type="text"
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                placeholder="Type or speak your message..."
-                className="flex-1 px-4 py-3 bg-white/20 border border-white/30 rounded-xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm"
+                placeholder="Ask about restaurants, bookings, menus..."
+                className="flex-1 px-3 py-2 md:px-4 md:py-3 bg-white/20 border border-white/30 rounded-xl text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm text-sm md:text-base"
               />
               <button
                 onClick={handleVoiceInput}
-                className={`p-3 rounded-xl transition-all duration-200 ${
+                className={`p-2 md:p-3 rounded-xl transition-all duration-200 ${
                   isListening 
                     ? 'bg-red-500 text-white animate-pulse' 
                     : 'bg-white/20 text-white hover:bg-white/30 border border-white/30'
                 }`}
                 title={isListening ? "Stop listening" : "Start voice input"}
               >
-                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                {isListening ? <MicOff className="w-3 h-3 md:w-4 md:h-4" /> : <Mic className="w-3 h-3 md:w-4 md:h-4" />}
               </button>
               <button
                 onClick={handleSendMessage}
                 disabled={inputMessage.trim() === ''}
-                className="p-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                className="p-2 md:p-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-3 h-3 md:w-4 md:h-4" />
               </button>
             </div>
           </div>

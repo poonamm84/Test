@@ -117,7 +117,17 @@ const BookingView = () => {
             </div>
 
             {/* Table Layout */}
-            <div className="relative bg-gray-100 rounded-lg p-4 md:p-8 min-h-[300px] md:min-h-[400px] overflow-auto">
+            <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 md:p-8 min-h-[300px] md:min-h-[400px] overflow-auto shadow-inner">
+              {/* Restaurant Floor Plan Background */}
+              <div className="absolute inset-0 opacity-10">
+                <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg"></div>
+              </div>
+              
+              {/* Floor Elements */}
+              <div className="absolute top-4 left-4 text-xs text-gray-500 font-medium">Restaurant Floor Plan</div>
+              <div className="absolute top-4 right-4 text-xs text-gray-500">Kitchen</div>
+              <div className="absolute bottom-4 left-4 text-xs text-gray-500">Entrance</div>
+              
               {restaurant.tables.map(table => (
                 <div
                   key={table.id}
@@ -129,7 +139,7 @@ const BookingView = () => {
                   }}
                 >
                   <button
-                    className={`relative w-16 h-16 md:w-20 md:h-20 rounded-lg text-white font-semibold text-xs md:text-sm transition-all transform hover:scale-110 ${
+                    className={`relative w-16 h-16 md:w-20 md:h-20 rounded-xl text-white font-semibold text-xs md:text-sm transition-all transform hover:scale-110 shadow-lg hover:shadow-xl ${
                       getTableColor(table.status)
                     } ${selectedTable?.id === table.id ? 'ring-4 ring-blue-500' : ''} ${
                       table.status !== 'available' ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
@@ -138,14 +148,25 @@ const BookingView = () => {
                     disabled={table.status !== 'available'}
                     title={`Table ${table.number} - ${getTableStatus(table.status)} - ${table.capacity} seats`}
                   >
-                    {table.status === 'available' && (
+                    {/* Table Image Background */}
+                    <div className="absolute inset-0 rounded-xl overflow-hidden">
                       <img
-                        src={`https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop`}
+                        src={table.status === 'available' 
+                          ? `https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop`
+                          : table.status === 'reserved'
+                          ? `https://images.pexels.com/photos/1307698/pexels-photo-1307698.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop`
+                          : `https://images.pexels.com/photos/941861/pexels-photo-941861.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop`
+                        }
                         alt={`Table ${table.number}`}
-                        className="absolute inset-0 w-full h-full object-cover opacity-30"
+                        className="w-full h-full object-cover opacity-40"
                       />
-                    )}
-                    <div className="relative z-10 flex flex-col items-center justify-center h-full">
+                      {/* Overlay gradient */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                    </div>
+                    
+                    {/* Table Info */}
+                    <div className="relative z-10 flex flex-col items-center justify-center h-full bg-black/20 rounded-xl backdrop-blur-sm">
+                      {table.status === 'available' && <div className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>}
                       <span className="text-lg font-bold">{table.number}</span>
                       <span className="text-xs">{table.capacity}p</span>
                     </div>
@@ -156,9 +177,17 @@ const BookingView = () => {
 
             {selectedTable && (
               <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                <h3 className="font-semibold text-blue-900">Selected Table</h3>
-                <p className="text-blue-800">
-                  Table {selectedTable.number} - {selectedTable.capacity} seats
+                <div className="flex items-center space-x-3">
+                  <img
+                    src={`https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=60&h=60&fit=crop`}
+                    alt={`Table ${selectedTable.number}`}
+                    className="w-12 h-12 object-cover rounded-lg"
+                  />
+                  <div>
+                    <h3 className="font-semibold text-blue-900">Table {selectedTable.number} Selected</h3>
+                    <p className="text-blue-800 text-sm">Capacity: {selectedTable.capacity} guests • Premium seating</p>
+                  </div>
+                </div>
                 </p>
               </div>
             )}

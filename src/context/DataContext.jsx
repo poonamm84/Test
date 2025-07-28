@@ -28,7 +28,9 @@ const mockRestaurants = [
       status: ['available', 'reserved', 'occupied', 'cleaning'][Math.floor(Math.random() * 4)],
       x: (i % 5) * 18 + 10,
       y: Math.floor(i / 5) * 20 + 10,
-      image: `https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=center`
+      image: `https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=center`,
+      type: ['window', 'corner', 'center', 'private'][Math.floor(Math.random() * 4)],
+      features: ['WiFi', 'Power Outlet', 'View', 'Quiet Zone'][Math.floor(Math.random() * 4)]
     }))
   },
   {
@@ -47,7 +49,9 @@ const mockRestaurants = [
       status: ['available', 'reserved', 'occupied', 'cleaning'][Math.floor(Math.random() * 4)],
       x: (i % 5) * 18 + 10,
       y: Math.floor(i / 5) * 20 + 10,
-      image: `https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=center`
+      image: `https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=center`,
+      type: ['window', 'corner', 'center', 'private'][Math.floor(Math.random() * 4)],
+      features: ['WiFi', 'Power Outlet', 'View', 'Quiet Zone'][Math.floor(Math.random() * 4)]
     }))
   },
   {
@@ -66,7 +70,9 @@ const mockRestaurants = [
       status: ['available', 'reserved', 'occupied', 'cleaning'][Math.floor(Math.random() * 4)],
       x: (i % 6) * 15 + 8,
       y: Math.floor(i / 6) * 18 + 8,
-      image: `https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=center`
+      image: `https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=center`,
+      type: ['window', 'corner', 'center', 'private'][Math.floor(Math.random() * 4)],
+      features: ['WiFi', 'Power Outlet', 'View', 'Quiet Zone'][Math.floor(Math.random() * 4)]
     }))
   }
 ];
@@ -196,6 +202,25 @@ export const DataProvider = ({ children }) => {
   const [orders, setOrders] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [cart, setCart] = useState([]);
+  
+  // Admin functionality
+  const updateRestaurant = (restaurantId, updates) => {
+    setRestaurants(prev => prev.map(restaurant => 
+      restaurant.id === restaurantId ? { ...restaurant, ...updates } : restaurant
+    ));
+  };
+
+  const addMenuItem = (restaurantId, menuItem) => {
+    // Implementation for adding menu items
+  };
+
+  const updateMenuItem = (restaurantId, itemId, updates) => {
+    // Implementation for updating menu items
+  };
+
+  const deleteMenuItem = (restaurantId, itemId) => {
+    // Implementation for deleting menu items
+  };
 
   const addToCart = (item, restaurantId) => {
     setCart(prev => [...prev, { ...item, restaurantId, id: Date.now() }]);
@@ -236,6 +261,10 @@ export const DataProvider = ({ children }) => {
     orders,
     bookings,
     cart,
+    updateRestaurant,
+    addMenuItem,
+    updateMenuItem,
+    deleteMenuItem,
     addToCart,
     removeFromCart,
     clearCart,

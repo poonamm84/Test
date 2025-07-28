@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
-import { 
-  BarChart, Users, DollarSign, Clock, Settings, Menu, X, MessageSquare, 
-  Plus, Edit, Trash2, Save, Cancel, Eye, EyeOff, Star, MapPin, Phone,
-  TrendingUp, ShoppingCart, Calendar, AlertCircle, CheckCircle, Package,
-  Filter, Search, Download, Upload, RefreshCw, Bell, Activity
-} from 'lucide-react';
+import { BarChart, Users, DollarSign, Clock, Settings, Menu, X, MessageSquare, Plus, Edit, Trash2, Save, Ambulance as Cancel, Eye, EyeOff, Star, MapPin, Phone, TrendingUp, ShoppingCart, Calendar, AlertCircle, CheckCircle, Package, Filter, Search, Download, Upload, RefreshCw, Bell, Activity } from 'lucide-react';
 import NotificationToast from '../components/NotificationToast';
 import { useNotification } from '../context/NotificationContext';
 

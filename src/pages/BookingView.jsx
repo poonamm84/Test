@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { useNotification } from '../context/NotificationContext';
-import { Calendar, Clock, Users, ArrowLeft, Check } from 'lucide-react';
+import { Calendar, Clock, Users, ArrowLeft, Check, MapPin, Star, Utensils, Wifi, Car } from 'lucide-react';
 
 const BookingView = () => {
   const { id } = useParams();
@@ -51,9 +51,9 @@ const BookingView = () => {
     navigate('/dashboard');
   };
 
-  const getTableColor = (status) => {
+  const getTableStatusColor = (status) => {
     switch (status) {
-      case 'available': return 'bg-green-500 hover:bg-green-600';
+      case 'available': return 'bg-green-500';
       case 'reserved': return 'bg-yellow-500';
       case 'occupied': return 'bg-red-500';
       case 'cleaning': return 'bg-gray-500';
@@ -61,222 +61,240 @@ const BookingView = () => {
     }
   };
 
-  const getTableStatus = (status) => {
-    switch (status) {
-      case 'available': return 'Available';
-      case 'reserved': return 'Reserved';
-      case 'occupied': return 'Occupied';
-      case 'cleaning': return 'Cleaning';
-      default: return 'Unknown';
+  const getTableFeatureIcon = (type) => {
+    switch (type) {
+      case 'window': return <MapPin className="w-3 h-3" />;
+      case 'private': return <Users className="w-3 h-3" />;
+      case 'corner': return <Star className="w-3 h-3" />;
+      default: return <Utensils className="w-3 h-3" />;
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center py-4">
-            <Link to="/dashboard" className="flex items-center space-x-2 text-gray-600 hover:text-gray-900">
+      {/* Mobile Header */}
+      <header className="bg-white shadow-sm border-b sticky top-0 z-40">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between">
+            <Link to="/dashboard" className="flex items-center space-x-2 text-gray-600">
               <ArrowLeft className="w-5 h-5" />
-              <span>Back to Dashboard</span>
+              <span className="text-sm font-medium">Back</span>
             </Link>
+            <h1 className="text-lg font-semibold text-gray-900">Book Table</h1>
+            <div className="w-8"></div>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Book a Table</h1>
-          <p className="text-gray-600">Reserve your table at {restaurant.name}</p>
-        </div>
-
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Table Map */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Select Your Table</h2>
-            
-            {/* Legend */}
-            <div className="flex flex-wrap gap-4 mb-6 text-sm">
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-green-500 rounded"></div>
-                <span>Available</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-yellow-500 rounded"></div>
-                <span>Reserved</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-red-500 rounded"></div>
-                <span>Occupied</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-gray-500 rounded"></div>
-                <span>Cleaning</span>
-              </div>
+      {/* Restaurant Info */}
+      <div className="bg-white border-b px-4 py-4">
+        <div className="flex items-center space-x-3">
+          <img
+            src={restaurant.image}
+            alt={restaurant.name}
+            className="w-12 h-12 rounded-lg object-cover"
+          />
+          <div className="flex-1">
+            <h2 className="font-semibold text-gray-900">{restaurant.name}</h2>
+            <div className="flex items-center space-x-2 text-sm text-gray-600">
+              <Star className="w-4 h-4 text-yellow-500 fill-current" />
+              <span>{restaurant.rating}</span>
+              <span>•</span>
+              <span>{restaurant.cuisine}</span>
             </div>
-
-            {/* Table Layout */}
-            <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 md:p-8 min-h-[300px] md:min-h-[400px] overflow-auto shadow-inner">
-              {/* Restaurant Floor Plan Background */}
-              <div className="absolute inset-0 opacity-10">
-                <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg"></div>
-              </div>
-              
-              {/* Floor Elements */}
-              <div className="absolute top-4 left-4 text-xs text-gray-500 font-medium">Restaurant Floor Plan</div>
-              <div className="absolute top-4 right-4 text-xs text-gray-500">Kitchen</div>
-              <div className="absolute bottom-4 left-4 text-xs text-gray-500">Entrance</div>
-              
-              {restaurant.tables.map(table => (
-                <div
-                  key={table.id}
-                  className="absolute"
-                  style={{ 
-                    left: `${Math.min(table.x, 85)}%`, 
-                    top: `${Math.min(table.y, 85)}%`,
-                    transform: 'translate(-50%, -50%)'
-                  }}
-                >
-                  <button
-                    className={`relative w-16 h-16 md:w-20 md:h-20 rounded-xl text-white font-semibold text-xs md:text-sm transition-all transform hover:scale-110 shadow-lg hover:shadow-xl ${
-                      getTableColor(table.status)
-                    } ${selectedTable?.id === table.id ? 'ring-4 ring-blue-500' : ''} ${
-                      table.status !== 'available' ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'
-                    } overflow-hidden`}
-                    onClick={() => handleTableSelect(table)}
-                    disabled={table.status !== 'available'}
-                    title={`Table ${table.number} - ${getTableStatus(table.status)} - ${table.capacity} seats`}
-                  >
-                    {/* Table Image Background */}
-                    <div className="absolute inset-0 rounded-xl overflow-hidden">
-                      <img
-                        src={table.status === 'available' 
-                          ? `https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop`
-                          : table.status === 'reserved'
-                          ? `https://images.pexels.com/photos/1307698/pexels-photo-1307698.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop`
-                          : `https://images.pexels.com/photos/941861/pexels-photo-941861.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop`
-                        }
-                        alt={`Table ${table.number}`}
-                        className="w-full h-full object-cover opacity-40"
-                      />
-                      {/* Overlay gradient */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                    </div>
-                    
-                    {/* Table Info */}
-                    <div className="relative z-10 flex flex-col items-center justify-center h-full bg-black/20 rounded-xl backdrop-blur-sm">
-                      {table.status === 'available' && <div className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>}
-                      <span className="text-lg font-bold">{table.number}</span>
-                      <span className="text-xs">{table.capacity}p</span>
-                    </div>
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            {selectedTable && (
-              <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <img
-                    src={`https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=60&h=60&fit=crop`}
-                    alt={`Table ${selectedTable.number}`}
-                    className="w-12 h-12 object-cover rounded-lg"
-                  />
-                  <div>
-                    <h3 className="font-semibold text-blue-900">Table {selectedTable.number} Selected</h3>
-                    <p className="text-blue-800 text-sm">Capacity: {selectedTable.capacity} guests • Premium seating</p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Booking Form */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4">Booking Details</h2>
-            
-            <form onSubmit={handleBooking} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Calendar className="w-4 h-4 inline mr-2" />
-                  Date
-                </label>
-                <input
-                  type="date"
-                  value={bookingData.date}
-                  onChange={(e) => setBookingData(prev => ({ ...prev, date: e.target.value }))}
-                  min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Clock className="w-4 h-4 inline mr-2" />
-                  Time
-                </label>
-                <select
-                  value={bookingData.time}
-                  onChange={(e) => setBookingData(prev => ({ ...prev, time: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Select time</option>
-                  {Array.from({ length: 24 }, (_, i) => {
-                    const hour = i.toString().padStart(2, '0');
-                    return [
-                      <option key={`${hour}:00`} value={`${hour}:00`}>{hour}:00</option>,
-                      <option key={`${hour}:30`} value={`${hour}:30`}>{hour}:30</option>
-                    ];
-                  })}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Users className="w-4 h-4 inline mr-2" />
-                  Number of Guests
-                </label>
-                <select
-                  value={bookingData.guests}
-                  onChange={(e) => setBookingData(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {Array.from({ length: 10 }, (_, i) => (
-                    <option key={i + 1} value={i + 1}>{i + 1} guest{i > 0 ? 's' : ''}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Special Requests (Optional)
-                </label>
-                <textarea
-                  value={bookingData.specialRequests}
-                  onChange={(e) => setBookingData(prev => ({ ...prev, specialRequests: e.target.value }))}
-                  rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Any special requests or dietary requirements..."
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={!selectedTable}
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-6 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center space-x-2"
-              >
-                <Check className="w-5 h-5" />
-                <span>Confirm Booking</span>
-              </button>
-            </form>
           </div>
         </div>
       </div>
+
+      <div className="px-4 py-6 space-y-6">
+        {/* Date & Time Selection */}
+        <div className="bg-white rounded-xl shadow-sm border p-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">When would you like to dine?</h3>
+          
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Calendar className="w-4 h-4 inline mr-1" />
+                Date
+              </label>
+              <input
+                type="date"
+                value={bookingData.date}
+                onChange={(e) => setBookingData(prev => ({ ...prev, date: e.target.value }))}
+                min={new Date().toISOString().split('T')[0]}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Clock className="w-4 h-4 inline mr-1" />
+                Time
+              </label>
+              <select
+                value={bookingData.time}
+                onChange={(e) => setBookingData(prev => ({ ...prev, time: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                required
+              >
+                <option value="">Select time</option>
+                {['18:00', '18:30', '19:00', '19:30', '20:00', '20:30', '21:00', '21:30'].map(time => (
+                  <option key={time} value={time}>{time}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <Users className="w-4 h-4 inline mr-1" />
+              Party Size
+            </label>
+            <select
+              value={bookingData.guests}
+              onChange={(e) => setBookingData(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            >
+              {Array.from({ length: 8 }, (_, i) => (
+                <option key={i + 1} value={i + 1}>{i + 1} guest{i > 0 ? 's' : ''}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Table Selection */}
+        <div className="bg-white rounded-xl shadow-sm border p-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Choose your table</h3>
+          
+          {/* Legend */}
+          <div className="flex flex-wrap gap-3 mb-4 text-xs">
+            <div className="flex items-center space-x-1">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <span>Available</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+              <span>Reserved</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+              <span>Occupied</span>
+            </div>
+          </div>
+
+          {/* Table Grid - Mobile Optimized */}
+          <div className="grid grid-cols-2 gap-3">
+            {restaurant.tables.map(table => (
+              <button
+                key={table.id}
+                className={`relative p-4 rounded-xl border-2 transition-all ${
+                  selectedTable?.id === table.id 
+                    ? 'border-blue-500 bg-blue-50' 
+                    : table.status === 'available' 
+                      ? 'border-gray-200 bg-white hover:border-gray-300' 
+                      : 'border-gray-200 bg-gray-50 opacity-60'
+                } ${table.status !== 'available' ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                onClick={() => handleTableSelect(table)}
+                disabled={table.status !== 'available'}
+              >
+                {/* Status Indicator */}
+                <div className={`absolute top-2 right-2 w-3 h-3 rounded-full ${getTableStatusColor(table.status)}`}></div>
+                
+                {/* Table Image */}
+                <div className="w-full h-20 bg-gray-100 rounded-lg mb-3 overflow-hidden">
+                  <img
+                    src={`https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=200&h=150&fit=crop`}
+                    alt={`Table ${table.number}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                
+                {/* Table Info */}
+                <div className="text-left">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-semibold text-gray-900">Table {table.number}</span>
+                    <span className="text-sm text-gray-600">{table.capacity} seats</span>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2 text-xs text-gray-500">
+                    {getTableFeatureIcon(table.type)}
+                    <span className="capitalize">{table.type} seating</span>
+                  </div>
+                  
+                  {table.features && (
+                    <div className="flex items-center space-x-1 mt-1">
+                      <Wifi className="w-3 h-3 text-blue-500" />
+                      <span className="text-xs text-gray-500">WiFi</span>
+                    </div>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+
+          {selectedTable && (
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <Check className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-blue-900">Table {selectedTable.number} Selected</p>
+                  <p className="text-sm text-blue-700">Perfect for {selectedTable.capacity} guests • {selectedTable.type} seating</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Special Requests */}
+        <div className="bg-white rounded-xl shadow-sm border p-4">
+          <h3 className="text-lg font-semibold text-gray-900 mb-3">Special Requests</h3>
+          <textarea
+            value={bookingData.specialRequests}
+            onChange={(e) => setBookingData(prev => ({ ...prev, specialRequests: e.target.value }))}
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            placeholder="Any dietary requirements, celebration notes, or special requests..."
+          />
+        </div>
+
+        {/* Booking Summary */}
+        {selectedTable && bookingData.date && bookingData.time && (
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200 p-4">
+            <h3 className="font-semibold text-gray-900 mb-3">Booking Summary</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Restaurant:</span>
+                <span className="font-medium">{restaurant.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Table:</span>
+                <span className="font-medium">Table {selectedTable.number} ({selectedTable.capacity} seats)</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Date & Time:</span>
+                <span className="font-medium">{bookingData.date} at {bookingData.time}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Party Size:</span>
+                <span className="font-medium">{bookingData.guests} guests</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Confirm Button */}
+        <button
+          onClick={handleBooking}
+          disabled={!selectedTable || !bookingData.date || !bookingData.time}
+          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 px-6 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center justify-center space-x-2"
+        >
+          <Check className="w-5 h-5" />
+          <span>Confirm Booking</span>
+        </button>
+      </div>
     </div>
-    
   );
 };
 

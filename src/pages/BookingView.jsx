@@ -188,7 +188,6 @@ const BookingView = () => {
                     <p className="text-blue-800 text-sm">Capacity: {selectedTable.capacity} guests • Premium seating</p>
                   </div>
                 </div>
-                </p>
               </div>
             )}
           </div>
@@ -277,6 +276,7 @@ const BookingView = () => {
         </div>
       </div>
     </div>
+    
   );
 };
 

@@ -35,18 +35,18 @@ const AdminDashboard = () => {
 
   // Enhanced admin stats
   const [adminStats, setAdminStats] = useState({
-    todayRevenue: 2450.75,
-    todayOrders: 18,
-    activeBookings: 12,
-    avgRating: 4.7,
-    totalCustomers: 156,
-    monthlyRevenue: 45680.25,
-    pendingOrders: 5,
-    completedOrders: 13,
-    weeklyGrowth: 8.5,
-    customerSatisfaction: 96.2,
-    repeatCustomers: 68,
-    avgOrderValue: 42.50
+    todayRevenue: 3247.85,
+    todayOrders: 24,
+    activeBookings: 15,
+    avgRating: 4.8,
+    totalCustomers: 234,
+    monthlyRevenue: 67890.50,
+    pendingOrders: 3,
+    completedOrders: 21,
+    weeklyGrowth: 12.3,
+    customerSatisfaction: 97.8,
+    repeatCustomers: 89,
+    avgOrderValue: 48.75
   });
 
   const [tableBookings, setTableBookings] = useState([
@@ -54,34 +54,45 @@ const AdminDashboard = () => {
       id: 1, 
       customerName: 'John Smith', 
       tableNumber: 5, 
-      date: '2025-01-15', 
+      date: '2025-01-16', 
       time: '19:00', 
       guests: 4, 
       status: 'confirmed',
       phone: '+1 234-567-8901',
-      specialRequests: 'Birthday celebration'
+      specialRequests: 'Anniversary dinner - need quiet table'
     },
     { 
       id: 2, 
       customerName: 'Sarah Johnson', 
       tableNumber: 8, 
-      date: '2025-01-15', 
+      date: '2025-01-16', 
       time: '20:30', 
       guests: 2, 
       status: 'pending',
       phone: '+1 234-567-8902',
-      specialRequests: 'Window seat preferred'
+      specialRequests: 'Vegetarian menu required'
     },
     { 
       id: 3, 
       customerName: 'Mike Davis', 
       tableNumber: 12, 
-      date: '2025-01-16', 
+      date: '2025-01-17', 
       time: '18:30', 
       guests: 6, 
       status: 'confirmed',
       phone: '+1 234-567-8903',
-      specialRequests: 'Vegetarian options needed'
+      specialRequests: 'Business dinner - need private area'
+    },
+    {
+      id: 4,
+      customerName: 'Emily Chen',
+      tableNumber: 3,
+      date: '2025-01-17',
+      time: '19:30',
+      guests: 3,
+      status: 'confirmed',
+      phone: '+1 234-567-8904',
+      specialRequests: 'Birthday celebration - cake arrangement needed'
     }
   ]);
 
@@ -91,11 +102,11 @@ const AdminDashboard = () => {
       name: 'John Smith',
       email: 'john@example.com',
       phone: '+1 234-567-8901',
-      totalOrders: 23,
-      totalSpent: 1250.75,
-      lastVisit: '2025-01-10',
-      favoriteItems: ['Grilled Salmon', 'Caesar Salad'],
-      loyaltyPoints: 450,
+      totalOrders: 28,
+      totalSpent: 1456.90,
+      lastVisit: '2025-01-14',
+      favoriteItems: ['Wagyu Beef Tenderloin', 'Truffle Arancini'],
+      loyaltyPoints: 520,
       status: 'VIP'
     },
     {
@@ -103,32 +114,60 @@ const AdminDashboard = () => {
       name: 'Sarah Johnson',
       email: 'sarah@example.com',
       phone: '+1 234-567-8902',
-      totalOrders: 15,
-      totalSpent: 680.25,
-      lastVisit: '2025-01-12',
-      favoriteItems: ['Pasta Carbonara', 'Tiramisu'],
-      loyaltyPoints: 280,
+      totalOrders: 19,
+      totalSpent: 847.60,
+      lastVisit: '2025-01-13',
+      favoriteItems: ['Pan-Seared Salmon', 'Chocolate Soufflé'],
+      loyaltyPoints: 340,
       status: 'Regular'
+    },
+    {
+      id: 3,
+      name: 'Emily Chen',
+      email: 'emily.chen@email.com',
+      phone: '+1 234-567-8903',
+      totalOrders: 12,
+      totalSpent: 567.25,
+      lastVisit: '2025-01-15',
+      favoriteItems: ['Lobster Thermidor', 'Truffle Arancini'],
+      loyaltyPoints: 225,
+      status: 'Regular'
+    },
+    {
+      id: 4,
+      name: 'Mike Davis',
+      email: 'mike.davis@email.com',
+      phone: '+1 234-567-8904',
+      totalOrders: 35,
+      totalSpent: 2134.80,
+      lastVisit: '2025-01-14',
+      favoriteItems: ['Wagyu Beef Tenderloin', 'Pan-Seared Salmon'],
+      loyaltyPoints: 780,
+      status: 'VIP'
     }
   ]);
 
   const [salesAnalytics, setSalesAnalytics] = useState({
     dailySales: [
-      { date: '2025-01-10', revenue: 1200, orders: 28 },
-      { date: '2025-01-11', revenue: 1450, orders: 32 },
-      { date: '2025-01-12', revenue: 1680, orders: 35 },
-      { date: '2025-01-13', revenue: 1320, orders: 29 },
-      { date: '2025-01-14', revenue: 1890, orders: 41 }
+      { date: '2025-01-10', revenue: 2847, orders: 34 },
+      { date: '2025-01-11', revenue: 3156, orders: 38 },
+      { date: '2025-01-12', revenue: 2934, orders: 36 },
+      { date: '2025-01-13', revenue: 3478, orders: 42 },
+      { date: '2025-01-14', revenue: 3247, orders: 39 },
+      { date: '2025-01-15', revenue: 3689, orders: 45 }
     ],
     topItems: [
-      { name: 'Grilled Salmon', orders: 45, revenue: 1305 },
-      { name: 'Caesar Salad', orders: 38, revenue: 570 },
-      { name: 'Pasta Carbonara', orders: 32, revenue: 640 }
+      { name: 'Wagyu Beef Tenderloin', orders: 67, revenue: 6023.33 },
+      { name: 'Pan-Seared Salmon', orders: 89, revenue: 2936.11 },
+      { name: 'Lobster Thermidor', orders: 45, revenue: 2969.55 },
+      { name: 'Truffle Arancini', orders: 124, revenue: 2355.76 },
+      { name: 'Chocolate Soufflé', orders: 78, revenue: 1325.22 }
     ],
     peakHours: [
-      { hour: '18:00-19:00', orders: 15 },
-      { hour: '19:00-20:00', orders: 22 },
-      { hour: '20:00-21:00', orders: 18 }
+      { hour: '18:00-19:00', orders: 23 },
+      { hour: '19:00-20:00', orders: 34 },
+      { hour: '20:00-21:00', orders: 28 },
+      { hour: '21:00-22:00', orders: 19 }
     ]
   });
 
@@ -136,24 +175,40 @@ const AdminDashboard = () => {
     {
       id: 1,
       type: 'booking',
-      title: 'New Table Booking',
-      message: 'Table 5 booked for tonight at 7:00 PM',
-      time: '5 minutes ago',
+      title: 'VIP Table Booking',
+      message: 'Table 12 reserved for anniversary dinner - 6 guests',
+      time: '3 minutes ago',
       read: false
     },
     {
       id: 2,
       type: 'order',
-      title: 'Large Order Alert',
-      message: 'Order for 8 people - Table 12',
-      time: '15 minutes ago',
+      title: 'High-Value Order',
+      message: 'Order #247 - $340 total with premium wine selection',
+      time: '8 minutes ago',
       read: false
     },
     {
       id: 3,
       type: 'review',
       title: 'New 5-Star Review',
-      message: 'Excellent service and food quality!',
+      message: '"Outstanding wagyu beef and impeccable service!" - John S.',
+      time: '25 minutes ago',
+      read: true
+    },
+    {
+      id: 4,
+      type: 'inventory',
+      title: 'Low Stock Alert',
+      message: 'Wagyu beef running low - only 3 portions remaining',
+      time: '45 minutes ago',
+      read: false
+    },
+    {
+      id: 5,
+      type: 'staff',
+      title: 'Staff Schedule Update',
+      message: 'Weekend shift coverage confirmed for all positions',
       time: '1 hour ago',
       read: true
     }

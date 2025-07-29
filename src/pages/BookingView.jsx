@@ -183,64 +183,80 @@ const BookingView = () => {
           </div>
 
           {/* Table Grid - Mobile Optimized */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {restaurant.tables.map(table => (
               <button
                 key={table.id}
-                className={`relative p-4 rounded-xl border-2 transition-all ${
+                className={`relative p-3 rounded-xl border-2 transition-all duration-300 ${
                   selectedTable?.id === table.id 
-                    ? 'border-blue-500 bg-blue-50' 
+                    ? 'border-blue-500 bg-blue-50 shadow-lg transform scale-105' 
                     : table.status === 'available' 
-                      ? 'border-gray-200 bg-white hover:border-gray-300' 
+                      ? 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-md' 
                       : 'border-gray-200 bg-gray-50 opacity-60'
                 } ${table.status !== 'available' ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                 onClick={() => handleTableSelect(table)}
                 disabled={table.status !== 'available'}
               >
                 {/* Status Indicator */}
-                <div className={`absolute top-2 right-2 w-3 h-3 rounded-full ${getTableStatusColor(table.status)}`}></div>
+                <div className={`absolute top-2 right-2 w-3 h-3 rounded-full ${getTableStatusColor(table.status)} ${
+                  table.status === 'available' ? 'animate-pulse' : ''
+                }`}></div>
                 
                 {/* Table Image */}
-                <div className="w-full h-20 bg-gray-100 rounded-lg mb-3 overflow-hidden">
+                <div className="w-full h-16 sm:h-20 bg-gray-100 rounded-lg mb-2 overflow-hidden relative">
                   <img
-                    src={`https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=200&h=150&fit=crop`}
+                    src={table.status === 'available' 
+                      ? `https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=200&h=150&fit=crop&crop=center`
+                      : `https://images.pexels.com/photos/262047/pexels-photo-262047.jpeg?auto=compress&cs=tinysrgb&w=200&h=150&fit=crop&crop=center`
+                    }
                     alt={`Table ${table.number}`}
-                    className="w-full h-full object-cover"
+                    className={`w-full h-full object-cover transition-all duration-300 ${
+                      table.status === 'available' ? 'brightness-100' : 'brightness-50 grayscale'
+                    }`}
                   />
+                  {/* Table overlay with elegant design */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                  <div className="absolute bottom-1 left-1 right-1">
+                    <div className="bg-white/90 backdrop-blur-sm rounded px-2 py-1">
+                      <div className="text-xs font-semibold text-gray-800 text-center">
+                        Table {table.number}
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 
                 {/* Table Info */}
                 <div className="text-left">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-semibold text-gray-900">Table {table.number}</span>
-                    <span className="text-sm text-gray-600">{table.capacity} seats</span>
+                  <div className="flex items-center justify-between mb-1 text-xs sm:text-sm">
+                    <span className="font-semibold text-gray-900">{table.capacity} seats</span>
+                    <span className="text-gray-600 capitalize">{table.type}</span>
                   </div>
                   
-                  <div className="flex items-center space-x-2 text-xs text-gray-500">
-                    {getTableFeatureIcon(table.type)}
-                    <span className="capitalize">{table.type} seating</span>
-                  </div>
-                  
-                  {table.features && (
-                    <div className="flex items-center space-x-1 mt-1">
-                      <Wifi className="w-3 h-3 text-blue-500" />
-                      <span className="text-xs text-gray-500">WiFi</span>
+                  <div className="flex items-center justify-between text-xs text-gray-500">
+                    <div className="flex items-center space-x-1">
+                      {getTableFeatureIcon(table.type)}
+                      <span>Premium</span>
                     </div>
-                  )}
+                    {table.features && (
+                      <div className="flex items-center space-x-1">
+                        <Wifi className="w-3 h-3 text-blue-500" />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </button>
             ))}
           </div>
 
           {selectedTable && (
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200 shadow-sm">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
                   <Check className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
-                  <p className="font-medium text-blue-900">Table {selectedTable.number} Selected</p>
-                  <p className="text-sm text-blue-700">Perfect for {selectedTable.capacity} guests • {selectedTable.type} seating</p>
+                  <p className="font-semibold text-blue-900">Table {selectedTable.number} Selected ✨</p>
+                  <p className="text-sm text-blue-700">Perfect for {selectedTable.capacity} guests • {selectedTable.type} seating • Premium location</p>
                 </div>
               </div>
             </div>

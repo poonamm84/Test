@@ -25,12 +25,12 @@ const mockRestaurants = [
       id: i + 1,
       number: i + 1,
       capacity: [2, 4, 6, 8][Math.floor(Math.random() * 4)],
-      status: ['available', 'reserved', 'occupied', 'cleaning'][Math.floor(Math.random() * 4)],
+      status: i < 12 ? 'available' : ['reserved', 'occupied', 'cleaning'][Math.floor(Math.random() * 3)],
       x: (i % 5) * 18 + 10,
       y: Math.floor(i / 5) * 20 + 10,
-      image: `https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=center`,
+      image: `https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop&crop=center`,
       type: ['window', 'corner', 'center', 'private'][Math.floor(Math.random() * 4)],
-      features: ['WiFi', 'Power Outlet', 'View', 'Quiet Zone'][Math.floor(Math.random() * 4)]
+      features: ['WiFi', 'Power Outlet', 'Premium View', 'Quiet Zone']
     }))
   },
   {
@@ -46,12 +46,12 @@ const mockRestaurants = [
       id: i + 1,
       number: i + 1,
       capacity: [2, 4, 6][Math.floor(Math.random() * 3)],
-      status: ['available', 'reserved', 'occupied', 'cleaning'][Math.floor(Math.random() * 4)],
+      status: i < 10 ? 'available' : ['reserved', 'occupied', 'cleaning'][Math.floor(Math.random() * 3)],
       x: (i % 5) * 18 + 10,
       y: Math.floor(i / 5) * 20 + 10,
-      image: `https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=center`,
+      image: `https://images.pexels.com/photos/941861/pexels-photo-941861.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop&crop=center`,
       type: ['window', 'corner', 'center', 'private'][Math.floor(Math.random() * 4)],
-      features: ['WiFi', 'Power Outlet', 'View', 'Quiet Zone'][Math.floor(Math.random() * 4)]
+      features: ['WiFi', 'Sushi Bar View', 'Traditional Seating', 'Sake Pairing']
     }))
   },
   {
@@ -67,12 +67,12 @@ const mockRestaurants = [
       id: i + 1,
       number: i + 1,
       capacity: [2, 4, 6, 8][Math.floor(Math.random() * 4)],
-      status: ['available', 'reserved', 'occupied', 'cleaning'][Math.floor(Math.random() * 4)],
+      status: i < 14 ? 'available' : ['reserved', 'occupied', 'cleaning'][Math.floor(Math.random() * 3)],
       x: (i % 6) * 15 + 8,
       y: Math.floor(i / 6) * 18 + 8,
-      image: `https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop&crop=center`,
+      image: `https://images.pexels.com/photos/776538/pexels-photo-776538.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop&crop=center`,
       type: ['window', 'corner', 'center', 'private'][Math.floor(Math.random() * 4)],
-      features: ['WiFi', 'Power Outlet', 'View', 'Quiet Zone'][Math.floor(Math.random() * 4)]
+      features: ['WiFi', 'Wine Cellar View', 'Family Friendly', 'Romantic Ambiance']
     }))
   }
 ];

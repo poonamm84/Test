@@ -79,17 +79,27 @@ const AdminLogin = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="mb-6 p-4 bg-blue-500/20 border border-blue-500/30 rounded-lg">
+                <h3 className="text-blue-200 font-semibold mb-2">Restaurant Admin Login</h3>
+                <p className="text-blue-200 text-sm mb-3">Use your restaurant-specific credentials:</p>
+                <div className="space-y-1 text-xs text-blue-100">
+                  <p><strong>Golden Spoon:</strong> ID: GS001, Pass: golden123</p>
+                  <p><strong>Sakura Sushi:</strong> ID: SS002, Pass: sakura456</p>
+                  <p><strong>Mama's Italian:</strong> ID: MI003, Pass: mama789</p>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Admin Email
+                  Restaurant Admin ID
                 </label>
                 <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
+                  type="text"
+                  name="adminId"
+                  value={formData.adminId}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm"
-                  placeholder="admin@restaurant.com"
+                  placeholder="Enter restaurant admin ID (e.g., GS001)"
                   required
                 />
               </div>
@@ -105,7 +115,7 @@ const AdminLogin = () => {
                     value={formData.password}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm pr-12"
-                    placeholder="Enter admin password"
+                    placeholder="Enter restaurant password"
                     required
                   />
                   <button
@@ -126,14 +136,6 @@ const AdminLogin = () => {
                 {isLoading ? 'Authenticating...' : 'Access Admin Panel'}
               </button>
             </form>
-
-            <div className="mt-6 p-4 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
-              <p className="text-yellow-200 text-sm">
-                <strong>Demo Credentials:</strong><br />
-                Email: admin@restaurant.com<br />
-                Password: admin123
-              </p>
-            </div>
 
             <div className="mt-6 text-center">
               <Link to="/" className="text-gray-400 hover:text-gray-300 text-sm transition-colors">

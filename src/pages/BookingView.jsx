@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, Clock, Users, ArrowLeft, Check, MapPin, Star, Utensils, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
 
 function App() {
   const [showTableCards, setShowTableCards] = useState(false);
@@ -76,6 +78,9 @@ function App() {
     }
   ];
 
+  const navigate = useNavigate();
+
+
   const handleBookTableClick = () => {
     setShowTableCards(true);
     };
@@ -97,9 +102,9 @@ function App() {
   };
 
   const handleBackToMain = () => {
-    setShowTableCards(false); 
-    setShowImageView(false);  
-  };
+  navigate('/dashboard'); 
+};
+
 
   const handleBooking = (e) => {
     e.preventDefault();

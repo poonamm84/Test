@@ -81,7 +81,7 @@ const AdminLogin = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="mb-6 p-4 bg-blue-500/20 border border-blue-500/30 rounded-lg">
                 <h3 className="text-blue-200 font-semibold mb-2">Restaurant Admin Login</h3>
-                <p className="text-blue-200 text-sm mb-3">Use your restaurant-specific credentials:</p>
+                <p className="text-blue-200 text-sm mb-3">Use your unique restaurant admin credentials:</p>
                 <div className="space-y-1 text-xs text-blue-100">
                   <p><strong>Golden Spoon:</strong> ID: GS001, Pass: golden123</p>
                   <p><strong>Sakura Sushi:</strong> ID: SS002, Pass: sakura456</p>
@@ -91,15 +91,15 @@ const AdminLogin = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Restaurant Admin ID
+                  Admin ID
                 </label>
                 <input
                   type="text"
-                  name="adminId"
-                  value={formData.adminId}
+                  name="admin_id"
+                  value={formData.admin_id}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm"
-                  placeholder="Enter restaurant admin ID (e.g., GS001)"
+                  placeholder="Enter your admin ID (e.g., GS001)"
                   required
                 />
               </div>
@@ -115,7 +115,7 @@ const AdminLogin = () => {
                     value={formData.password}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm pr-12"
-                    placeholder="Enter restaurant password"
+                    placeholder="Enter your password"
                     required
                   />
                   <button

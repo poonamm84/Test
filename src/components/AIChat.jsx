@@ -266,7 +266,7 @@ const AIChat = () => {
   return (
     <div
       ref={chatRef}
-      className="fixed z-50 bg-slate-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-600/50 overflow-hidden"
+      className="fixed z-50 bg-slate-900/98 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-700/60 overflow-hidden"
       style={{
         left: position.x,
         top: position.y,
@@ -316,7 +316,7 @@ const AIChat = () => {
       {!isMinimized && (
         <>
           {/* Messages */}
-          <div className="flex-1 p-3 md:p-4 space-y-3 md:space-y-4 overflow-y-auto bg-slate-900/50" style={{ height: isMobile ? 'calc(80vh - 140px)' : '380px' }}>
+          <div className="flex-1 p-3 md:p-4 space-y-3 md:space-y-4 overflow-y-auto bg-slate-800/80" style={{ height: isMobile ? 'calc(80vh - 140px)' : '380px' }}>
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -334,12 +334,12 @@ const AIChat = () => {
                   <div
                     className={`p-3 rounded-2xl backdrop-blur-sm border shadow-lg ${
                       message.sender === 'user'
-                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white border-blue-500/50 shadow-blue-500/25'
-                        : 'bg-slate-700/90 text-white border-slate-600/50 shadow-slate-900/25'
+                        ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white border-blue-400/50 shadow-blue-500/30'
+                        : 'bg-slate-700/95 text-white border-slate-600/60 shadow-slate-900/30'
                     }`}
                   >
-                    <p className="text-xs md:text-sm leading-relaxed text-white">{message.text}</p>
-                    <p className="text-xs opacity-60 mt-2 text-slate-300">
+                    <p className="text-xs md:text-sm leading-relaxed text-white font-medium">{message.text}</p>
+                    <p className="text-xs opacity-70 mt-2 text-slate-200">
                       {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
@@ -353,11 +353,11 @@ const AIChat = () => {
                   <div className="w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center">
                     <Bot className="w-3 h-3 text-white" />
                   </div>
-                  <div className="bg-slate-700/90 backdrop-blur-sm text-white p-3 rounded-2xl border border-slate-600/50 shadow-lg">
+                  <div className="bg-slate-700/95 backdrop-blur-sm text-white p-3 rounded-2xl border border-slate-600/60 shadow-lg">
                     <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
                 </div>
@@ -383,7 +383,7 @@ const AIChat = () => {
           </div>
 
           {/* Input */}
-          <div className="p-3 md:p-4 bg-slate-800/90 backdrop-blur-sm border-t border-slate-600/50">
+          <div className="p-3 md:p-4 bg-slate-800/95 backdrop-blur-sm border-t border-slate-600/60">
             <div className="flex items-center space-x-2">
               <input
                 type="text"
@@ -391,14 +391,14 @@ const AIChat = () => {
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                 placeholder="Ask about restaurants, bookings, menus..."
-                className="flex-1 px-3 py-2 md:px-4 md:py-3 bg-slate-700/90 border border-slate-600/50 rounded-xl text-white placeholder-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm text-sm md:text-base"
+                className="flex-1 px-3 py-2 md:px-4 md:py-3 bg-slate-700/95 border border-slate-600/60 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm text-sm md:text-base"
               />
               <button
                 onClick={handleVoiceInput}
                 className={`p-2 md:p-3 rounded-xl transition-all duration-200 ${
                   isListening 
                     ? 'bg-red-500 text-white animate-pulse' 
-                    : 'bg-slate-700/90 text-white hover:bg-slate-600/90 border border-slate-600/50'
+                    : 'bg-slate-700/95 text-white hover:bg-slate-600/95 border border-slate-600/60'
                 }`}
                 title={isListening ? "Stop listening" : "Start voice input"}
               >
@@ -407,7 +407,7 @@ const AIChat = () => {
               <button
                 onClick={handleSendMessage}
                 disabled={inputMessage.trim() === ''}
-                className="p-2 md:p-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                className="p-2 md:p-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
               >
                 <Send className="w-3 h-3 md:w-4 md:h-4" />
               </button>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, Users, ArrowLeft, Check, MapPin, Star, Utensils, Eye, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Calendar, Clock, Users, ArrowLeft, Check, MapPin, Star, Utensils, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 
 function App() {
   const [showTableCards, setShowTableCards] = useState(false);
@@ -24,12 +24,12 @@ function App() {
     image: "https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=800&h=400&fit=crop"
   };
 
-  // Define table types with detailed information
+  // Table types with detailed information
   const tableTypes = [
     {
       id: 1,
-      name: "Window Table for Two",
-      type: "romantic",
+      name: "Couple Table",
+      type: "couple",
       capacity: 2,
       description: "Perfect for intimate dining with stunning city views",
       image: "https://images.pexels.com/photos/1395967/pexels-photo-1395967.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
@@ -44,7 +44,7 @@ function App() {
     },
     {
       id: 2,
-      name: "Center Table for Four",
+      name: "Family Table",
       type: "family",
       capacity: 4,
       description: "Spacious seating in the heart of the restaurant",
@@ -60,8 +60,8 @@ function App() {
     },
     {
       id: 3,
-      name: "Private Booth",
-      type: "private",
+      name: "Large Group Table",
+      type: "group",
       capacity: 6,
       description: "Exclusive booth for special occasions and complete privacy",
       image: "https://images.pexels.com/photos/262047/pexels-photo-262047.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
@@ -78,6 +78,12 @@ function App() {
 
   const handleBookTableClick = () => {
     setShowTableCards(true);
+    };
+
+  const handleTableClick = (table) => {
+    setSelectedTable(table);
+    setCurrentImageIndex(0);
+    setShowImageView(true);
   };
 
   const handleTableSelect = (table) => {
@@ -88,13 +94,11 @@ function App() {
 
   const handleBackToTableCards = () => {
     setShowImageView(false);
-    setSelectedTable(null);
   };
 
   const handleBackToMain = () => {
-    setShowTableCards(false);
-    setShowImageView(false);
-    setSelectedTable(null);
+    setShowTableCards(false); 
+    setShowImageView(false);  
   };
 
   const handleBooking = (e) => {
@@ -103,6 +107,18 @@ function App() {
       alert('Please fill in all required fields');
       return;
     }
+
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex === 0 ? tableTypes.length - 1 : prevIndex - 1
+    );
+  };
+
+  const handleNextImage = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex === tableTypes.length - 1 ? 0 : prevIndex + 1
+    );
+  };
     
     alert(`Table booked successfully!\n\nTable: ${selectedTable.name}\nDate: ${bookingData.date}\nTime: ${bookingData.time}\nGuests: ${bookingData.guests}`);
     
@@ -130,99 +146,38 @@ function App() {
     }
   };
 
-  // Main Restaurant View
-  if (!showTableCards) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
-        {/* Header */}
-        <header className="bg-white/90 backdrop-blur-md shadow-sm border-b sticky top-0 z-40">
-          <div className="px-4 py-3">
-            <div className="flex items-center justify-center">
-              <h1 className="text-lg font-semibold text-gray-900">Restaurant Booking</h1>
-            </div>
-          </div>
-        </header>
 
-        {/* Restaurant Info Card */}
-        <div className="bg-white mx-4 mt-6 rounded-2xl shadow-lg border overflow-hidden">
-          <div className="relative">
-            <div className="absolute top-3 left-3 z-10">
-              <span className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs px-3 py-1 rounded-full font-semibold shadow-lg">
-                Promoted
-              </span>
-            </div>
-            
-            <div className="h-48 overflow-hidden">
-              <img
-                src={restaurant.image}
-                alt={restaurant.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            
-            <div className="p-5">
-              <div className="flex justify-between items-start mb-3">
-                <h2 className="text-2xl font-bold text-gray-900">{restaurant.name}</h2>
-                <div className="flex items-center bg-green-600 text-white px-3 py-1 rounded-lg shadow-md">
-                  <span className="text-sm font-bold">{restaurant.rating}</span>
-                  <Star className="w-3 h-3 ml-1 fill-current" />
-                </div>
-              </div>
-              
-              <p className="text-gray-600 text-sm mb-3">{restaurant.cuisine}</p>
-              
-              <div className="flex justify-between items-center mb-4">
-                <div className="text-xl font-bold text-gray-900">
-                  {restaurant.priceForTwo} for two
-                </div>
-                <div className="text-sm text-gray-500 flex items-center">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  {restaurant.location}
-                </div>
-              </div>
-
-              {/* Book Table Button */}
-              <button
-                onClick={handleBookTableClick}
-                className="w-full bg-gradient-to-r from-amber-600 to-orange-600 text-white py-4 px-6 rounded-xl hover:from-amber-700 hover:to-orange-700 transition-all duration-300 shadow-lg hover:shadow-xl font-semibold flex items-center justify-center space-x-2"
-              >
-                <Utensils className="w-5 h-5" />
-                <span>Book Table</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Table Selection View
+  // Choose Your Table View
   if (!showImageView) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
-        {/* Header */}
         <header className="bg-white/90 backdrop-blur-md shadow-sm border-b sticky top-0 z-40">
           <div className="px-4 py-3">
             <div className="flex items-center justify-between">
-              <button onClick={handleBackToMain} className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors">
+              <button 
+                onClick={handleBackToMain} 
+                className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors hover:bg-gray-100 px-2 py-1 rounded-lg"
+              >
                 <ArrowLeft className="w-5 h-5" />
                 <span className="text-sm font-medium">Back</span>
               </button>
               <h1 className="text-lg font-semibold text-gray-900">Choose Your Table</h1>
-              <div className="w-8"></div>
+              <div className="w-16"></div>
             </div>
           </div>
         </header>
 
-        {/* Table Selection Cards */}
         <div className="px-4 py-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-6 text-center">Select Your Perfect Table</h3>
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Select Your Perfect Table</h2>
+            <p className="text-gray-600 text-sm">Choose from our carefully curated seating options</p>
+          </div>
           
           <div className="flex overflow-x-auto gap-4 px-2 snap-x snap-mandatory scroll-smooth">
             {tableTypes.map((tableType) => (
               <div key={tableType.id} className="bg-white rounded-2xl shadow-lg border min-w-[280px] max-w-xs snap-center shrink-0 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 aspect-[3/4]">
                 <div className="relative">
-                  <div className="h-40 overflow-hidden">
+                  <div className="h-40 overflow-hidden rounded-t-2xl">
                     <img
                       src={tableType.image}
                       alt={tableType.name}
@@ -231,39 +186,39 @@ function App() {
                   </div>
                   
                   <div className="absolute top-3 right-3">
-                    <div className="bg-black/50 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium">
+                    <div className="bg-black/70 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium">
                       {tableType.capacity} seats
                     </div>
                   </div>
                 </div>
                 
-                 <div className="p-4 flex flex-col justify-between h-[calc(100%-10rem)]">
-                       <div className="flex justify-between items-start mb-3">
-                       <div>
-                       <h4 className="text-base font-bold text-gray-900 mb-1">{tableType.name}</h4>
-                        <p className="text-gray-600 text-xs">{tableType.description}</p>
-                      </div>
-                        <div className="text-right">
-                        <div className="text-sm font-bold text-green-600">{tableType.minSpend}</div>
-                        <div className="text-xs text-gray-500">min spend</div>
-                        </div>
-                     </div>
+                <div className="p-4 flex flex-col justify-between h-[calc(100%-10rem)]">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h4 className="text-base font-bold text-gray-900 mb-1">{tableType.name}</h4>
+                      <p className="text-gray-600 text-xs leading-relaxed">{tableType.description}</p>
+                    </div>
+                    <div className="text-right ml-2">
+                      <div className="text-sm font-bold text-green-600">{tableType.minSpend}</div>
+                      <div className="text-xs text-gray-500">min spend</div>
+                    </div>
+                  </div>
                   
-                  <div className="flex flex-wrap gap-1 mb-3">
-          {tableType.features.map((feature, index) => (
-            <span key={index} className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full font-medium">
-              {feature}
-            </span>
-          ))}
-        </div>
+                  <div className="flex flex-wrap gap-1 mb-4">
+                    {tableType.features.map((feature, index) => (
+                      <span key={index} className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full font-medium">
+                        {feature}
+                      </span>
+                    ))}
+                  </div>
                   
-                 <button
-          onClick={() => handleTableSelect(tableType)}
-          className="w-full bg-gradient-to-r from-amber-600 to-orange-600 text-white py-2 px-4 rounded-xl hover:from-amber-700 hover:to-orange-700 transition-all duration-300 shadow-lg hover:shadow-xl font-semibold flex items-center justify-center space-x-2 text-sm"
-        >
-          <Eye className="w-4 h-4" />
-          <span>View This Table</span>
-        </button>
+                  <button
+                    onClick={() => handleTableSelect(tableType)}
+                    className="w-full bg-gradient-to-r from-amber-600 to-orange-600 text-white py-2.5 px-4 rounded-xl hover:from-amber-700 hover:to-orange-700 transition-all duration-300 shadow-lg hover:shadow-xl font-semibold flex items-center justify-center space-x-2 text-sm transform hover:scale-105 active:scale-95"
+                  >
+                    <Eye className="w-4 h-4" />
+                    <span>View This Table</span>
+                  </button>
                 </div>
               </div>
             ))}
@@ -273,24 +228,25 @@ function App() {
     );
   }
 
-  // Table Image Detail View
+  // Table Detail and Booking View
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
-      {/* Header */}
       <header className="bg-white/90 backdrop-blur-md shadow-sm border-b sticky top-0 z-40">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
-            <button onClick={handleBackToTableCards} className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors">
+            <button 
+              onClick={handleBackToTableCards} 
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors hover:bg-gray-100 px-2 py-1 rounded-lg"
+            >
               <ArrowLeft className="w-5 h-5" />
               <span className="text-sm font-medium">Back</span>
             </button>
             <h1 className="text-lg font-semibold text-gray-900">{selectedTable.name}</h1>
-            <div className="w-8"></div>
+            <div className="w-16"></div>
           </div>
         </div>
       </header>
 
-      {/* Main Table Image with Gallery */}
       <div className="bg-white mx-4 mt-4 rounded-2xl shadow-lg border overflow-hidden">
         <div className="relative">
           <div className="h-56 overflow-hidden">
@@ -301,7 +257,6 @@ function App() {
             />
           </div>
           
-          {/* Image Navigation */}
           {selectedTable.gallery.length > 1 && (
             <>
               <button
@@ -319,7 +274,6 @@ function App() {
             </>
           )}
           
-          {/* Image Counter */}
           <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
             {currentImageIndex + 1} / {selectedTable.gallery.length}
           </div>
@@ -333,7 +287,6 @@ function App() {
       </div>
 
       <div className="px-4 py-6 space-y-6">
-        {/* Table Details */}
         <div className="bg-white rounded-2xl shadow-lg border p-5">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Table Details</h3>
           
@@ -360,7 +313,6 @@ function App() {
           </div>
         </div>
 
-        {/* Booking Form */}
         <div className="bg-white rounded-2xl shadow-lg border p-5">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Book Your Table</h3>
           
@@ -426,7 +378,6 @@ function App() {
           </div>
         </div>
 
-        {/* Booking Summary */}
         {bookingData.date && bookingData.time && (
           <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-200 p-5">
             <h3 className="font-semibold text-gray-900 mb-3">Booking Summary</h3>
@@ -455,11 +406,10 @@ function App() {
           </div>
         )}
 
-        {/* Confirm Button */}
         <button
           onClick={handleBooking}
           disabled={!bookingData.date || !bookingData.time}
-          className="w-full bg-gradient-to-r from-amber-600 to-orange-600 text-white py-4 px-6 rounded-xl hover:from-amber-700 hover:to-orange-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center justify-center space-x-2"
+          className="w-full bg-gradient-to-r from-amber-600 to-orange-600 text-white py-4 px-6 rounded-xl hover:from-amber-700 hover:to-orange-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center justify-center space-x-2 transform hover:scale-105 active:scale-95"
         >
           <Check className="w-5 h-5" />
           <span>Confirm Booking</span>

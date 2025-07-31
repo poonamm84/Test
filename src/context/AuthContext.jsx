@@ -32,6 +32,9 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(true);
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('role', userRole);
+    if (userData.token) {
+      localStorage.setItem('token', userData.token);
+    }
   };
 
   const logout = () => {
@@ -40,6 +43,7 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
     localStorage.removeItem('user');
     localStorage.removeItem('role');
+    localStorage.removeItem('token');
   };
 
   const value = {

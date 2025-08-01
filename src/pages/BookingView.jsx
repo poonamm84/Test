@@ -1,30 +1,20 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, Users, ArrowLeft, Check, MapPin, Star, Utensils, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, Users, ArrowLeft, Check, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 
 function App() {
-  const [showTableCards, setShowTableCards] = useState(false);
+  const [showTableCards, setShowTableCards] = useState(true); // Start with table cards view
   const [selectedTable, setSelectedTable] = useState(null);
   const [showImageView, setShowImageView] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const navigate = useNavigate();
   const [bookingData, setBookingData] = useState({
     date: '',
     time: '',
     guests: 2,
     specialRequests: ''
   });
-
-  // Restaurant data
-  const restaurant = {
-    id: 1,
-    name: "Foo Palladium Ahmedabad",
-    cuisine: "Chinese, Sushi, Asian, Japanese",
-    rating: 4.4,
-    priceForTwo: "₹2,500",
-    location: "Thaltej, Ahmedabad • 4.9 km",
-    image: "https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=800&h=400&fit=crop"
-  };
 
   // Table types with detailed information
   const tableTypes = [
@@ -41,7 +31,8 @@ function App() {
       gallery: [
         "https://images.pexels.com/photos/1395967/pexels-photo-1395967.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
         "https://images.pexels.com/photos/262047/pexels-photo-262047.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
-        "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop"
+        "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
+        "https://images.pexels.com/photos/941861/pexels-photo-941861.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop"
       ]
     },
     {
@@ -57,7 +48,9 @@ function App() {
       gallery: [
         "https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
         "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
-        "https://images.pexels.com/photos/262047/pexels-photo-262047.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop"
+        "https://images.pexels.com/photos/262047/pexels-photo-262047.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
+        "https://images.pexels.com/photos/776538/pexels-photo-776538.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
+        "https://images.pexels.com/photos/941861/pexels-photo-941861.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop"
       ]
     },
     {
@@ -73,38 +66,54 @@ function App() {
       gallery: [
         "https://images.pexels.com/photos/262047/pexels-photo-262047.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
         "https://images.pexels.com/photos/1395967/pexels-photo-1395967.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
-        "https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop"
+        "https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
+        "https://images.pexels.com/photos/776538/pexels-photo-776538.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop"
       ]
     }
   ];
 
-  const navigate = useNavigate();
-
-
-  const handleBookTableClick = () => {
-    setShowTableCards(true);
-    };
-
-  const handleTableClick = (table) => {
-    setSelectedTable(table);
-    setCurrentImageIndex(0);
-    setShowImageView(true);
-  };
-
   const handleTableSelect = (table) => {
     setSelectedTable(table);
+    setCurrentImageIndex(0); // Reset to first image when selecting a new table
     setShowImageView(true);
     setBookingData(prev => ({ ...prev, guests: table.capacity }));
   };
 
   const handleBackToTableCards = () => {
     setShowImageView(false);
+    setSelectedTable(null);
+    setCurrentImageIndex(0);
   };
 
+  
   const handleBackToMain = () => {
-  navigate('/dashboard'); 
-};
+   navigate('/dashboard'); 
+  };
 
+  // Image navigation functions - Fixed implementation
+  const nextImage = () => {
+    if (selectedTable && selectedTable.gallery && selectedTable.gallery.length > 0) {
+      setCurrentImageIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % selectedTable.gallery.length;
+        console.log('Next image:', nextIndex, 'of', selectedTable.gallery.length); // Debug log
+        return nextIndex;
+      });
+    }
+  };
+
+  const prevImage = () => {
+    if (selectedTable && selectedTable.gallery && selectedTable.gallery.length > 0) {
+      setCurrentImageIndex((prevIndex) => {
+        const nextIndex = prevIndex === 0 ? selectedTable.gallery.length - 1 : prevIndex - 1;
+        console.log('Previous image:', nextIndex, 'of', selectedTable.gallery.length); // Debug log
+        return nextIndex;
+      });
+    }
+  };
+
+  const goToImage = (index) => {
+    setCurrentImageIndex(index);
+  };
 
   const handleBooking = (e) => {
     e.preventDefault();
@@ -112,25 +121,16 @@ function App() {
       alert('Please fill in all required fields');
       return;
     }
-
-  const handlePrevImage = () => {
-    setCurrentImageIndex((prevIndex) =>
-      prevIndex === 0 ? tableTypes.length - 1 : prevIndex - 1
-    );
-  };
-
-  const handleNextImage = () => {
-    setCurrentImageIndex((prevIndex) =>
-      prevIndex === tableTypes.length - 1 ? 0 : prevIndex + 1
-    );
-  };
     
     alert(`Table booked successfully!\n\nTable: ${selectedTable.name}\nDate: ${bookingData.date}\nTime: ${bookingData.time}\nGuests: ${bookingData.guests}`);
+
+
     
     // Reset form
-    setShowTableCards(false);
+    setShowTableCards(true);
     setShowImageView(false);
     setSelectedTable(null);
+    setCurrentImageIndex(0);
     setBookingData({
       date: '',
       time: '',
@@ -139,38 +139,33 @@ function App() {
     });
   };
 
-  const nextImage = () => {
-    if (selectedTable) {
-      setCurrentImageIndex((prev) => (prev + 1) % selectedTable.gallery.length);
-    }
-  };
-
-  const prevImage = () => {
-    if (selectedTable) {
-      setCurrentImageIndex((prev) => (prev - 1 + selectedTable.gallery.length) % selectedTable.gallery.length);
-    }
-  };
-
-
   // Choose Your Table View
   if (!showImageView) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
-        <header className="bg-white/90 backdrop-blur-md shadow-sm border-b sticky top-0 z-40">
-          <div className="px-4 py-3">
-            <div className="flex items-center justify-between">
-              <button 
-                onClick={handleBackToMain} 
-                className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors hover:bg-gray-100 px-2 py-1 rounded-lg"
-              >
-                <ArrowLeft className="w-5 h-5" />
-                <span className="text-sm font-medium">Back</span>
-              </button>
-              <h1 className="text-lg font-semibold text-gray-900">Choose Your Table</h1>
-              <div className="w-16"></div>
-            </div>
+       <header className="bg-white/90 backdrop-blur-md shadow-sm border-b sticky top-0 z-40">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between">
+            {/* Back Button on the left */}
+            <button 
+              onClick={handleBackToMain} 
+              className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors hover:bg-gray-100 px-2 py-1 rounded-lg"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="text-sm font-medium">Back</span>
+            </button>
+
+            {/* Centered Title */}
+            <h1 className="text-lg font-semibold text-gray-900 text-center flex-1">
+              Choose Your Table
+            </h1>
+
+            {/* Empty right spacer to balance layout */}
+            <div className="w-20" />
           </div>
-        </header>
+        </div>
+      </header>
+
 
         <div className="px-4 py-6">
           <div className="text-center mb-8">
@@ -193,6 +188,12 @@ function App() {
                   <div className="absolute top-3 right-3">
                     <div className="bg-black/70 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium">
                       {tableType.capacity} seats
+                    </div>
+                  </div>
+
+                  <div className="absolute top-3 left-3">
+                    <div className="bg-amber-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs font-medium">
+                      {tableType.gallery.length} photos
                     </div>
                   </div>
                 </div>
@@ -233,7 +234,7 @@ function App() {
     );
   }
 
-  // Table Detail and Booking View
+  // Table Detail and Booking View with Working Image Slider
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
       <header className="bg-white/90 backdrop-blur-md shadow-sm border-b sticky top-0 z-40">
@@ -246,7 +247,7 @@ function App() {
               <ArrowLeft className="w-5 h-5" />
               <span className="text-sm font-medium">Back</span>
             </button>
-            <h1 className="text-lg font-semibold text-gray-900">{selectedTable.name}</h1>
+            <h1 className="text-lg font-semibold text-gray-900">{selectedTable?.name}</h1>
             <div className="w-16"></div>
           </div>
         </div>
@@ -256,37 +257,57 @@ function App() {
         <div className="relative">
           <div className="h-56 overflow-hidden">
             <img
-              src={selectedTable.gallery[currentImageIndex]}
-              alt={selectedTable.name}
-              className="w-full h-full object-cover"
+              src={selectedTable?.gallery[currentImageIndex]}
+              alt={`${selectedTable?.name} - Image ${currentImageIndex + 1}`}
+              className="w-full h-full object-cover transition-transform duration-300"
             />
           </div>
           
-          {selectedTable.gallery.length > 1 && (
+          {/* Navigation Buttons - Fixed Implementation */}
+          {selectedTable?.gallery && selectedTable.gallery.length > 1 && (
             <>
               <button
                 onClick={prevImage}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200"
+                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200 backdrop-blur-sm z-10"
+                type="button"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button
                 onClick={nextImage}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200"
+                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200 backdrop-blur-sm z-10"
+                type="button"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
             </>
           )}
           
-          <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-            {currentImageIndex + 1} / {selectedTable.gallery.length}
+          {/* Image Counter */}
+          <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm">
+            {currentImageIndex + 1} / {selectedTable?.gallery?.length || 0}
           </div>
+          
+          {/* Image Indicator Dots */}
+          {selectedTable?.gallery && selectedTable.gallery.length > 1 && (
+            <div className="absolute bottom-14 left-1/2 -translate-x-1/2 flex space-x-2">
+              {selectedTable.gallery.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => goToImage(index)}
+                  className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                    index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                  }`}
+                  type="button"
+                />
+              ))}
+            </div>
+          )}
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
           <div className="absolute bottom-4 left-4 right-16">
-            <h2 className="text-xl font-bold text-white mb-2">{selectedTable.name}</h2>
-            <p className="text-white/90 text-sm">{selectedTable.description}</p>
+            <h2 className="text-xl font-bold text-white mb-2">{selectedTable?.name}</h2>
+            <p className="text-white/90 text-sm">{selectedTable?.description}</p>
           </div>
         </div>
       </div>
@@ -297,11 +318,11 @@ function App() {
           
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-xl">
-              <div className="text-2xl font-bold text-gray-900">{selectedTable.capacity}</div>
+              <div className="text-2xl font-bold text-gray-900">{selectedTable?.capacity}</div>
               <div className="text-sm text-gray-600">Seating Capacity</div>
             </div>
             <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl">
-              <div className="text-2xl font-bold text-gray-900">{selectedTable.minSpend}</div>
+              <div className="text-2xl font-bold text-gray-900">{selectedTable?.minSpend}</div>
               <div className="text-sm text-gray-600">Minimum Spend</div>
             </div>
           </div>
@@ -309,7 +330,7 @@ function App() {
           <div className="space-y-2">
             <h4 className="font-semibold text-gray-900">Features:</h4>
             <div className="flex flex-wrap gap-2">
-              {selectedTable.features.map((feature, index) => (
+              {selectedTable?.features?.map((feature, index) => (
                 <span key={index} className="bg-amber-100 text-amber-800 text-sm px-3 py-1 rounded-full font-medium">
                   {feature}
                 </span>
@@ -348,7 +369,7 @@ function App() {
                 required
               >
                 <option value="">Select time</option>
-                {selectedTable.availableSlots.map(time => (
+                {selectedTable?.availableSlots?.map(time => (
                   <option key={time} value={time}>{time}</option>
                 ))}
               </select>
@@ -365,7 +386,7 @@ function App() {
               onChange={(e) => setBookingData(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
             >
-              {Array.from({ length: selectedTable.capacity }, (_, i) => (
+              {Array.from({ length: selectedTable?.capacity || 2 }, (_, i) => (
                 <option key={i + 1} value={i + 1}>{i + 1} guest{i > 0 ? 's' : ''}</option>
               ))}
             </select>
@@ -389,11 +410,11 @@ function App() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Table Type:</span>
-                <span className="font-medium">{selectedTable.name}</span>
+                <span className="font-medium">{selectedTable?.name}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Capacity:</span>
-                <span className="font-medium">{selectedTable.capacity} guests</span>
+                <span className="font-medium">{selectedTable?.capacity} guests</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Date & Time:</span>
@@ -405,7 +426,7 @@ function App() {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Minimum Spend:</span>
-                <span className="font-medium text-green-600">{selectedTable.minSpend}</span>
+                <span className="font-medium text-green-600">{selectedTable?.minSpend}</span>
               </div>
             </div>
           </div>

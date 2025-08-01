@@ -253,157 +253,171 @@ function App() {
         </div>
       </header>
 
-      <div className="bg-white mx-4 mt-4 rounded-2xl shadow-lg border overflow-hidden">
-        <div className="relative">
-          <div className="h-56 overflow-hidden">
-            <img
-              src={selectedTable?.gallery[currentImageIndex]}
-              alt={`${selectedTable?.name} - Image ${currentImageIndex + 1}`}
-              className="w-full h-full object-cover transition-transform duration-300"
-            />
-          </div>
-          
-          {/* Navigation Buttons - Fixed Implementation */}
-          {selectedTable?.gallery && selectedTable.gallery.length > 1 && (
-            <>
-              <button
-                onClick={prevImage}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200 backdrop-blur-sm z-10"
-                type="button"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <button
-                onClick={nextImage}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all duration-200 backdrop-blur-sm z-10"
-                type="button"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </>
-          )}
-          
-          {/* Image Counter */}
-          <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm">
-            {currentImageIndex + 1} / {selectedTable?.gallery?.length || 0}
-          </div>
-          
-          {/* Image Indicator Dots */}
-          {selectedTable?.gallery && selectedTable.gallery.length > 1 && (
-            <div className="absolute bottom-14 left-1/2 -translate-x-1/2 flex space-x-2">
-              {selectedTable.gallery.map((_, index) => (
+      <div className="px-4 py-4 space-y-6">
+        {/* Image Slider Section */}
+        <div className="bg-white rounded-2xl shadow-lg border overflow-hidden">
+          <div className="relative">
+            {/* Main Image Container with improved aspect ratio */}
+            <div className="relative h-64 sm:h-72 md:h-80 overflow-hidden bg-gray-100">
+              <img
+          src="https://thumbs.dreamstime.com/b/elegant-table-setup-glasses-champagne-drinks-cutlery-stunning-view-luxury-restaurant-romantic-dinner-panoramic-329570365.jpg"
+          alt="Fine Restaurant Table"
+          className="w-full h-full object-cover transition-all duration-500 ease-in-out"    
+          style={{ objectPosition: 'center' }}
+        />
+              
+              {/* Enhanced gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10"></div>
+            </div>
+            
+            {/* Navigation Buttons with improved styling */}
+            {selectedTable?.gallery && selectedTable.gallery.length > 1 && (
+              <>
                 <button
-                  key={index}
-                  onClick={() => goToImage(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                    index === currentImageIndex ? 'bg-white' : 'bg-white/50'
-                  }`}
+                  onClick={prevImage}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white p-3 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl z-20 border border-white/20"
                   type="button"
-                />
-              ))}
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={nextImage}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white p-3 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl z-20 border border-white/20"
+                  type="button"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </>
+            )}
+            
+            {/* Enhanced Image Counter */}
+            <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm font-medium border border-white/20">
+              {currentImageIndex + 1} / {selectedTable?.gallery?.length || 0}
             </div>
-          )}
-          
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-          <div className="absolute bottom-4 left-4 right-16">
-            <h2 className="text-xl font-bold text-white mb-2">{selectedTable?.name}</h2>
-            <p className="text-white/90 text-sm">{selectedTable?.description}</p>
+            
+            {/* Enhanced Image Indicator Dots */}
+            {selectedTable?.gallery && selectedTable.gallery.length > 1 && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 bg-black/30 backdrop-blur-sm px-3 py-2 rounded-full">
+                {selectedTable.gallery.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => goToImage(index)}
+                    className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                      index === currentImageIndex 
+                        ? 'bg-white scale-125' 
+                        : 'bg-white/50 hover:bg-white/75'
+                    }`}
+                    type="button"
+                    aria-label={`Go to image ${index + 1}`}
+                  />
+                ))}
+              </div>
+            )}
+            
+            {/* Table Info Overlay */}
+            <div className="absolute bottom-4 left-4 right-20 text-white">
+              <h2 className="text-xl font-bold mb-1 drop-shadow-lg">{selectedTable?.name}</h2>
+              <p className="text-white/90 text-sm drop-shadow-md">{selectedTable?.description}</p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="px-4 py-6 space-y-6">
-        <div className="bg-white rounded-2xl shadow-lg border p-5">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Table Details</h3>
-          
+        {/* Table Features */}
+        <div className="bg-white rounded-2xl shadow-lg border p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Table Features</h3>
           <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-xl">
-              <div className="text-2xl font-bold text-gray-900">{selectedTable?.capacity}</div>
-              <div className="text-sm text-gray-600">Seating Capacity</div>
+            <div className="flex items-center space-x-2">
+              <Users className="w-5 h-5 text-amber-600" />
+              <span className="text-gray-700">Up to {selectedTable?.capacity} guests</span>
             </div>
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl">
-              <div className="text-2xl font-bold text-gray-900">{selectedTable?.minSpend}</div>
-              <div className="text-sm text-gray-600">Minimum Spend</div>
+            <div className="flex items-center space-x-2">
+              <span className="text-green-600 font-semibold">{selectedTable?.minSpend} min spend</span>
             </div>
           </div>
-          
-          <div className="space-y-2">
-            <h4 className="font-semibold text-gray-900">Features:</h4>
-            <div className="flex flex-wrap gap-2">
-              {selectedTable?.features?.map((feature, index) => (
-                <span key={index} className="bg-amber-100 text-amber-800 text-sm px-3 py-1 rounded-full font-medium">
-                  {feature}
-                </span>
-              ))}
-            </div>
+          <div className="flex flex-wrap gap-2">
+            {selectedTable?.features.map((feature, index) => (
+              <span key={index} className="bg-amber-100 text-amber-800 text-sm px-3 py-1.5 rounded-full font-medium">
+                {feature}
+              </span>
+            ))}
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-lg border p-5">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Book Your Table</h3>
-          
-          <div className="grid grid-cols-2 gap-4 mb-4">
+        {/* Booking Form */}
+        <div className="bg-white rounded-2xl shadow-lg border p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Make Your Reservation</h3>
+          <form onSubmit={handleBooking} className="space-y-4">
+            {/* Date Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Calendar className="w-4 h-4 inline mr-1" />
-                Date
+                <Calendar className="w-4 h-4 inline mr-2" />
+                Select Date
               </label>
               <input
                 type="date"
                 value={bookingData.date}
                 onChange={(e) => setBookingData(prev => ({ ...prev, date: e.target.value }))}
                 min={new Date().toISOString().split('T')[0]}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200"
                 required
               />
             </div>
+
+            {/* Time Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Clock className="w-4 h-4 inline mr-1" />
-                Time
+                <Clock className="w-4 h-4 inline mr-2" />
+                Select Time
               </label>
               <select
                 value={bookingData.time}
                 onChange={(e) => setBookingData(prev => ({ ...prev, time: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200"
                 required
               >
-                <option value="">Select time</option>
-                {selectedTable?.availableSlots?.map(time => (
-                  <option key={time} value={time}>{time}</option>
+                <option value="">Choose a time slot</option>
+                {selectedTable?.availableSlots.map((slot) => (
+                  <option key={slot} value={slot}>{slot}</option>
                 ))}
               </select>
             </div>
-          </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <Users className="w-4 h-4 inline mr-1" />
-              Party Size
-            </label>
-            <select
-              value={bookingData.guests}
-              onChange={(e) => setBookingData(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
-            >
-              {Array.from({ length: selectedTable?.capacity || 2 }, (_, i) => (
-                <option key={i + 1} value={i + 1}>{i + 1} guest{i > 0 ? 's' : ''}</option>
-              ))}
-            </select>
-          </div>
+            {/* Guest Count */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Users className="w-4 h-4 inline mr-2" />
+                Number of Guests
+              </label>
+              <select
+                value={bookingData.guests}
+                onChange={(e) => setBookingData(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200"
+              >
+                {Array.from({ length: selectedTable?.capacity || 2 }, (_, i) => i + 1).map((num) => (
+                  <option key={num} value={num}>{num} {num === 1 ? 'Guest' : 'Guests'}</option>
+                ))}
+              </select>
+            </div>
 
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Special Requests</label>
-            <textarea
-              value={bookingData.specialRequests}
-              onChange={(e) => setBookingData(prev => ({ ...prev, specialRequests: e.target.value }))}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
-              placeholder="Any dietary requirements, celebration notes, or special requests..."
-            />
-          </div>
+            {/* Special Requests */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Special Requests (Optional)
+              </label>
+              <textarea
+                value={bookingData.specialRequests}
+                onChange={(e) => setBookingData(prev => ({ ...prev, specialRequests: e.target.value }))}
+                placeholder="Any special requirements or dietary restrictions..."
+                rows={3}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200 resize-none"
+              />
+            </div>
+          </form>
         </div>
 
+        {/* Booking Summary */}
         {bookingData.date && bookingData.time && (
           <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border border-amber-200 p-5">
             <h3 className="font-semibold text-gray-900 mb-3">Booking Summary</h3>
@@ -432,6 +446,7 @@ function App() {
           </div>
         )}
 
+        {/* Confirm Booking Button */}
         <button
           onClick={handleBooking}
           disabled={!bookingData.date || !bookingData.time}

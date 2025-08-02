@@ -259,7 +259,7 @@ function App() {
               <img
                 src={selectedTable?.gallery?.[currentImageIndex] || selectedTable?.image}
                 alt={`${selectedTable?.name} - Image ${currentImageIndex + 1}`}
-                className="w-full h-full object-cover transition-all duration-500 ease-in-out"    
+                className="w-full h-full object-contain transition-all duration-500 ease-in-out"    
                 style={{ objectPosition: 'center' }}
               />
               

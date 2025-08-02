@@ -16,7 +16,7 @@ function App() {
     specialRequests: ''
   });
 
-  // Table types with detailed information
+  // Table types with detailed information and updated gallery images
   const tableTypes = [
     {
       id: 1,
@@ -29,10 +29,10 @@ function App() {
       features: ["Window view", "Romantic ambiance", "Perfect for couples"],
       availableSlots: ["18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00"],
       gallery: [
-        "https://images.pexels.com/photos/1395967/pexels-photo-1395967.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
-        "https://images.pexels.com/photos/262047/pexels-photo-262047.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
-        "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
-        "https://images.pexels.com/photos/941861/pexels-photo-941861.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop"
+        "/couple 1.jpg",
+        "/couple 2.jpg",
+        "/couple 3.jpg",
+        "/couple 4.jpg",
       ]
     },
     {
@@ -46,11 +46,10 @@ function App() {
       features: ["Central location", "Great for families", "Vibrant atmosphere"],
       availableSlots: ["18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"],
       gallery: [
-        "https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
-        "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
-        "https://images.pexels.com/photos/262047/pexels-photo-262047.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
-        "https://images.pexels.com/photos/776538/pexels-photo-776538.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
-        "https://images.pexels.com/photos/941861/pexels-photo-941861.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop"
+        "/family 1.jpg",
+        "/family 2.jpg",
+        "/family 3.jpg",
+        "/family 4.jpg",
       ]
     },
     {
@@ -64,10 +63,8 @@ function App() {
       features: ["Complete privacy", "Premium service", "Special occasions"],
       availableSlots: ["19:00", "19:30", "20:00", "20:30", "21:00", "21:30"],
       gallery: [
-        "https://images.pexels.com/photos/262047/pexels-photo-262047.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
-        "https://images.pexels.com/photos/1395967/pexels-photo-1395967.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
-        "https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
-        "https://images.pexels.com/photos/776538/pexels-photo-776538.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop"
+        "/group 1.jpg",
+        "/group 2.jpg",
       ]
     }
   ];
@@ -260,11 +257,11 @@ function App() {
             {/* Main Image Container with improved aspect ratio */}
             <div className="relative h-64 sm:h-72 md:h-80 overflow-hidden bg-gray-100">
               <img
-          src="https://thumbs.dreamstime.com/b/elegant-table-setup-glasses-champagne-drinks-cutlery-stunning-view-luxury-restaurant-romantic-dinner-panoramic-329570365.jpg"
-          alt="Fine Restaurant Table"
-          className="w-full h-full object-cover transition-all duration-500 ease-in-out"    
-          style={{ objectPosition: 'center' }}
-        />
+                src={selectedTable?.gallery?.[currentImageIndex] || selectedTable?.image}
+                alt={`${selectedTable?.name} - Image ${currentImageIndex + 1}`}
+                className="w-full h-full object-cover transition-all duration-500 ease-in-out"    
+                style={{ objectPosition: 'center' }}
+              />
               
               {/* Enhanced gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10"></div>

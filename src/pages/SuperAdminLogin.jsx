@@ -14,7 +14,7 @@ const SuperAdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, apiCall } = useAuth();
   const { addNotification } = useNotification();
 
   const handleInputChange = (e) => {
@@ -28,26 +28,27 @@ const SuperAdminLogin = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate super admin authentication with enhanced security
-    setTimeout(() => {
-      if (formData.email === 'owner@restaurantai.com' && 
-          formData.password === 'superadmin2025' && 
-          formData.securityCode === '777888') {
-        const userData = {
-          name: 'Platform Owner',
-          email: formData.email,
-          role: 'superadmin'
-        };
-
-        login(userData, 'superadmin');
-        addNotification('Super Admin access granted!', 'success');
-        setIsLoading(false);
-        navigate('/super-admin');
-      } else {
-        addNotification('Invalid super admin credentials or security code', 'error');
-        setIsLoading(false);
+    apiCall('/auth/super-admin-login', {
+      method: 'POST',
+      body: {
+        email: formData.email,
+        password: formData.password,
+        securityCode: formData.securityCode
       }
-    }, 2000);
+    })
+    .then(response => {
+      if (response.success) {
+        login(response.data.user, response.data.user.role, response.data.token);
+        addNotification('Super Admin access granted!', 'success');
+        navigate('/super-admin');
+      }
+    })
+    .catch(error => {
+      addNotification(error.message || 'Super admin login failed', 'error');
+    })
+    .finally(() => {
+      setIsLoading(false);
+    });
   };
 
   return (

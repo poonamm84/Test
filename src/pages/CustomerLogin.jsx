@@ -17,10 +17,11 @@ const CustomerLogin = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
+  const [otpStep, setOtpStep] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, apiCall } = useAuth();
   const { addNotification } = useNotification();
 
   const handleInputChange = (e) => {
@@ -31,33 +32,238 @@ const CustomerLogin = () => {
   };
 
   const handleSendOTP = () => {
+    if (!formData.phone && !formData.email) {
+      addNotification('Please enter email or phone number', 'error');
+      return;
+    }
+    
     setIsLoading(true);
-    // Simulate OTP sending
-    setTimeout(() => {
-      setOtpSent(true);
+    
+    const identifier = formData.email || formData.phone;
+    
+    // For OTP method, we need to send signup request first
+    const signupData = {
+      name: formData.name || 'Customer',
+      email: formData.email || null,
+      phone: formData.phone || null,
+      password: formData.password || 'temp123'
+    };
+
+    apiCall('/auth/signup', {
+      method: 'POST',
+      body: signupData
+    })
+    .then(response => {
+      if (response.success) {
+        setOtpSent(true);
+        addNotification(`OTP sent to ${identifier}`, 'success');
+      }
+    })
+    .catch(error => {
+      addNotification(error.message || 'Failed to send OTP', 'error');
+    })
+    .finally(() => {
       setIsLoading(false);
-      addNotification('OTP sent successfully!', 'success');
-    }, 1500);
+    });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate authentication
-    setTimeout(() => {
-      const userData = {
-        name: formData.name || 'Customer',
-        email: formData.email,
-        phone: formData.phone
-      };
+    if (isLogin) {
+      // Handle login
+      const identifier = formData.email || formData.phone;
+      
+      apiCall('/auth/login', {
+        method: 'POST',
+        body: {
+          identifier,
+          password: formData.password
+        }
+      })
+      .then(response => {
+        if (response.success) {
+          login(response.data.user, response.data.user.role, response.data.token);
+          addNotification('Login successful!', 'success');
+          navigate('/dashboard');
+        }
+      })
+      .catch(error => {
+        addNotification(error.message || 'Login failed', 'error');
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+    } else {
+      // Handle signup
+      if (loginMethod === 'otp' && otpSent) {
+        // Verify OTP
+        const identifier = formData.email || formData.phone;
+        
+        apiCall('/auth/verify-otp', {
+          method: 'POST',
+          body: {
+            identifier,
+            otp: formData.otp
+          }
+        })
+        .then(response => {
+          if (response.success) {
+            login(response.data.user, response.data.user.role, response.data.token);
+            addNotification('Account created successfully!', 'success');
+            navigate('/dashboard');
+          }
+        })
+        .catch(error => {
+          addNotification(error.message || 'OTP verification failed', 'error');
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+      } else {
+        // Regular signup
+        const signupData = {
+          name: formData.name,
+          email: formData.email || null,
+          phone: formData.phone || null,
+          password: formData.password
+        };
 
-      login(userData, 'customer');
-      addNotification('Login successful!', 'success');
-      setIsLoading(false);
-      navigate('/dashboard');
-    }, 1500);
+        apiCall('/auth/signup', {
+          method: 'POST',
+          body: signupData
+        })
+        .then(response => {
+          if (response.success) {
+            setOtpStep(true);
+            addNotification('OTP sent! Please check your email/phone', 'success');
+          }
+        })
+        .catch(error => {
+          addNotification(error.message || 'Signup failed', 'error');
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+      }
+    }
   };
+
+  const handleVerifyOTP = (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    const identifier = formData.email || formData.phone;
+    
+    apiCall('/auth/verify-otp', {
+      method: 'POST',
+      body: {
+        identifier,
+        otp: formData.otp
+      }
+    })
+    .then(response => {
+      if (response.success) {
+        login(response.data.user, response.data.user.role, response.data.token);
+        addNotification('Account verified successfully!', 'success');
+        navigate('/dashboard');
+      }
+    })
+    .catch(error => {
+      addNotification(error.message || 'OTP verification failed', 'error');
+    })
+    .finally(() => {
+      setIsLoading(false);
+    });
+  };
+
+  const handleResendOTP = () => {
+    setIsLoading(true);
+    const identifier = formData.email || formData.phone;
+    
+    apiCall('/auth/resend-otp', {
+      method: 'POST',
+      body: { identifier }
+    })
+    .then(response => {
+      if (response.success) {
+        addNotification('OTP resent successfully!', 'success');
+      }
+    })
+    .catch(error => {
+      addNotification(error.message || 'Failed to resend OTP', 'error');
+    })
+    .finally(() => {
+      setIsLoading(false);
+    });
+  };
+
+  // If we're in OTP verification step
+  if (otpStep) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <header className="relative z-10 bg-white/10 backdrop-blur-md border-b border-white/20">
+          <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center py-6">
+              <Link to="/" className="flex items-center space-x-2">
+                <ArrowLeft className="h-5 w-5 text-white" />
+                <ChefHat className="h-8 w-8 text-orange-400" />
+                <span className="text-2xl font-bold text-white">RestaurantAI</span>
+              </Link>
+            </div>
+          </nav>
+        </header>
+
+        <div className="flex items-center justify-center min-h-[calc(100vh-80px)] px-4 py-12">
+          <div className="w-full max-w-md">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl border border-white/20 p-8">
+              <div className="text-center mb-8">
+                <h2 className="text-3xl font-bold text-white">Verify Your Account</h2>
+                <p className="text-gray-300 mt-2">Enter the OTP sent to your {formData.email ? 'email' : 'phone'}</p>
+              </div>
+
+              <form onSubmit={handleVerifyOTP} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Enter OTP
+                  </label>
+                  <input
+                    type="text"
+                    name="otp"
+                    value={formData.otp}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm text-center text-2xl tracking-widest"
+                    placeholder="000000"
+                    maxLength={6}
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading || formData.otp.length !== 6}
+                  className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                >
+                  {isLoading ? 'Verifying...' : 'Verify OTP'}
+                </button>
+              </form>
+
+              <div className="mt-6 text-center">
+                <button
+                  onClick={handleResendOTP}
+                  disabled={isLoading}
+                  className="text-blue-400 hover:text-blue-300 font-medium transition-colors disabled:opacity-50"
+                >
+                  Resend OTP
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -203,29 +409,50 @@ const CustomerLogin = () => {
               {loginMethod === 'otp' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Phone Number
+                    {!isLogin ? 'Email or Phone Number' : 'Phone Number'}
                   </label>
-                  <div className="flex space-x-2">
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm"
-                      placeholder="Enter phone number"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={handleSendOTP}
-                      disabled={isLoading || otpSent}
-                      className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isLoading ? 'Sending...' : otpSent ? 'Sent' : 'Send OTP'}
-                    </button>
-                  </div>
+                  {!isLogin ? (
+                    <div className="space-y-4">
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm"
+                        placeholder="Enter email (optional)"
+                      />
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm"
+                        placeholder="Enter phone (optional)"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex space-x-2">
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm"
+                        placeholder="Enter phone number"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSendOTP}
+                        disabled={isLoading || otpSent}
+                        className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isLoading ? 'Sending...' : otpSent ? 'Sent' : 'Send OTP'}
+                      </button>
+                    </div>
+                  )}
                   
-                  {otpSent && (
+                  {otpSent && isLogin && (
                     <div className="mt-4">
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         Enter OTP
@@ -242,6 +469,32 @@ const CustomerLogin = () => {
                       />
                     </div>
                   )}
+                </div>
+              )}
+
+              {!isLogin && loginMethod === 'otp' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm pr-12"
+                      placeholder="Enter your password"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
                 </div>
               )}
 

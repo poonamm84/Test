@@ -6,14 +6,14 @@ import { useNotification } from '../context/NotificationContext';
 
 const AdminLogin = () => {
   const [formData, setFormData] = useState({
-    email: '',
+    adminId: '',
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, apiCall } = useAuth();
   const { addNotification } = useNotification();
 
   const handleInputChange = (e) => {
@@ -27,25 +27,26 @@ const AdminLogin = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate admin authentication
-    setTimeout(() => {
-      // Simple validation - in real app, this would be server-side
-      if (formData.email === 'admin@restaurant.com' && formData.password === 'admin123') {
-        const userData = {
-          name: 'Admin User',
-          email: formData.email,
-          role: 'admin'
-        };
-
-        login(userData, 'admin');
-        addNotification('Admin login successful!', 'success');
-        setIsLoading(false);
-        navigate('/admin');
-      } else {
-        addNotification('Invalid admin credentials', 'error');
-        setIsLoading(false);
+    apiCall('/auth/admin-login', {
+      method: 'POST',
+      body: {
+        adminId: formData.adminId,
+        password: formData.password
       }
-    }, 1500);
+    })
+    .then(response => {
+      if (response.success) {
+        login(response.data.user, response.data.user.role, response.data.token);
+        addNotification('Admin login successful!', 'success');
+        navigate('/admin');
+      }
+    })
+    .catch(error => {
+      addNotification(error.message || 'Admin login failed', 'error');
+    })
+    .finally(() => {
+      setIsLoading(false);
+    });
   };
 
   return (
@@ -81,15 +82,15 @@ const AdminLogin = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Admin Email
+                  Admin ID
                 </label>
                 <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
+                  type="text"
+                  name="adminId"
+                  value={formData.adminId}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm"
-                  placeholder="admin@restaurant.com"
+                  placeholder="GS001, SS002, MI003"
                   required
                 />
               </div>
@@ -130,7 +131,7 @@ const AdminLogin = () => {
             <div className="mt-6 p-4 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
               <p className="text-yellow-200 text-sm">
                 <strong>Demo Credentials:</strong><br />
-                Email: admin@restaurant.com<br />
+                Admin ID: GS001, SS002, or MI003<br />
                 Password: admin123
               </p>
             </div>

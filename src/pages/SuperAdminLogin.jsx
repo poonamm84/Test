@@ -28,19 +28,24 @@ const SuperAdminLogin = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    apiCall('/auth/super-admin-login', {
+    // Use the regular login endpoint which now handles super admin login
+    apiCall('/auth/login', {
       method: 'POST',
       body: {
-        email: formData.email,
-        password: formData.password,
-        securityCode: formData.securityCode
+        identifier: formData.email,
+        password: formData.password
       }
     })
     .then(response => {
       if (response.success) {
-        login(response.data.user, response.data.user.role, response.data.token);
-        addNotification('Super Admin access granted!', 'success');
-        navigate('/super-admin');
+        const user = response.data.user;
+        if (user.role === 'superadmin' && formData.securityCode === '777888') {
+          login(user, user.role, response.data.token);
+          addNotification('Super Admin access granted!', 'success');
+          navigate('/super-admin');
+        } else {
+          addNotification('Invalid security code or insufficient privileges', 'error');
+        }
       }
     })
     .catch(error => {

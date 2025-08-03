@@ -27,18 +27,27 @@ const AdminLogin = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    apiCall('/auth/admin-login', {
+    // Use the regular login endpoint which now handles admin login
+    apiCall('/auth/login', {
       method: 'POST',
       body: {
-        adminId: formData.adminId,
+        identifier: formData.adminId,
         password: formData.password
       }
     })
     .then(response => {
       if (response.success) {
-        login(response.data.user, response.data.user.role, response.data.token);
+        const user = response.data.user;
+        login(user, user.role, response.data.token);
         addNotification('Admin login successful!', 'success');
-        navigate('/admin');
+        
+        if (user.role === 'admin') {
+          navigate('/admin');
+        } else if (user.role === 'superadmin') {
+          navigate('/super-admin');
+        } else {
+          navigate('/dashboard');
+        }
       }
     })
     .catch(error => {
@@ -131,7 +140,7 @@ const AdminLogin = () => {
             <div className="mt-6 p-4 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
               <p className="text-yellow-200 text-sm">
                 <strong>Demo Credentials:</strong><br />
-                Admin ID: GS001, SS002, or MI003<br />
+                Restaurant Admin: GS001, SS002, or MI003<br />
                 Password: admin123
               </p>
             </div>

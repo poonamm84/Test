@@ -39,9 +39,7 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(true);
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('role', userRole);
-    if (authToken) {
-      localStorage.setItem('token', authToken);
-    }
+    localStorage.setItem('token', authToken);
   };
 
   const logout = () => {
@@ -56,7 +54,7 @@ export const AuthProvider = ({ children }) => {
 
   // API helper function
   const apiCall = async (endpoint, options = {}) => {
-    const url = `${API_BASE_URL}${endpoint}`;
+    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
     const config = {
       headers: {
         'Content-Type': 'application/json',
@@ -75,15 +73,20 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.message || 'API request failed');
+        throw new Error(data.message || `API request failed: ${response.status}`);
       }
       
       return data;
     } catch (error) {
       console.error('API call error:', error);
+      if (error.message.includes('401') || error.message.includes('403')) {
+        // Token expired or invalid, logout user
+        logout();
+      }
       throw error;
     }
   };
+
   const value = {
     user,
     role,

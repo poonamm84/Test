@@ -71,83 +71,61 @@ const CustomerLogin = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    if (isLogin) {
-      // Handle login
-      const identifier = formData.email || formData.phone;
-      
-      apiCall('/auth/login', {
-        method: 'POST',
-        body: {
-          identifier,
-          password: formData.password
-        }
-      })
-      .then(response => {
-        if (response.success) {
-          login(response.data.user, response.data.user.role, response.data.token);
-          addNotification('Login successful!', 'success');
+    const identifier = formData.email || formData.phone;
+
+    // First try to login
+    apiCall('/auth/login', {
+      method: 'POST',
+      body: {
+        identifier,
+        password: formData.password
+      }
+    })
+    .then(response => {
+      if (response.success) {
+        const user = response.data.user;
+        login(user, user.role, response.data.token);
+        addNotification('Login successful!', 'success');
+        
+        // Navigate based on role
+        if (user.role === 'admin') {
+          navigate('/admin');
+        } else if (user.role === 'superadmin') {
+          navigate('/super-admin');
+        } else {
           navigate('/dashboard');
         }
-      })
-      .catch(error => {
-        addNotification(error.message || 'Login failed', 'error');
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-    } else {
-      // Handle signup
-      if (loginMethod === 'otp' && otpSent) {
-        // Verify OTP
-        const identifier = formData.email || formData.phone;
-        
-        apiCall('/auth/verify-otp', {
+      }
+    })
+    .catch(error => {
+      // If login fails and we're in signup mode, try auto-signup
+      if (!isLogin && error.message.includes('Invalid email/password')) {
+        apiCall('/auth/auto-signup-login', {
           method: 'POST',
           body: {
             identifier,
-            otp: formData.otp
+            password: formData.password,
+            name: formData.name || 'Customer'
           }
         })
         .then(response => {
           if (response.success) {
             login(response.data.user, response.data.user.role, response.data.token);
-            addNotification('Account created successfully!', 'success');
+            addNotification('Account created and logged in successfully!', 'success');
             navigate('/dashboard');
           }
         })
-        .catch(error => {
-          addNotification(error.message || 'OTP verification failed', 'error');
+        .catch(signupError => {
+          addNotification(signupError.message || 'Failed to create account', 'error');
         })
         .finally(() => {
           setIsLoading(false);
         });
       } else {
-        // Regular signup
-        const signupData = {
-          name: formData.name,
-          email: formData.email || null,
-          phone: formData.phone || null,
-          password: formData.password
-        };
-
-        apiCall('/auth/signup', {
-          method: 'POST',
-          body: signupData
-        })
-        .then(response => {
-          if (response.success) {
-            setOtpStep(true);
-            addNotification('OTP sent! Please check your email/phone', 'success');
-          }
-        })
-        .catch(error => {
-          addNotification(error.message || 'Signup failed', 'error');
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
+        addNotification(error.message || 'Login failed', 'error');
+        setIsLoading(false);
       }
-    }
+    });
   };
 
   const handleVerifyOTP = (e) => {

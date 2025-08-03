@@ -256,46 +256,114 @@ router.post('/login', loginValidation, handleValidationErrors, async (req, res) 
     try {
         const { identifier, password } = req.body;
 
-        // Find user in login_users table
+        // First check if it's a restaurant admin login
+        const restaurant = await db.get(
+            'SELECT * FROM restaurants WHERE admin_id = ? AND is_active = 1',
+            [identifier]
+        );
+
+        if (restaurant) {
+            // Verify admin password
+            const isValidPassword = await bcrypt.compare(password, restaurant.admin_password_hash);
+            if (isValidPassword) {
+                // Get admin user details
+                const adminUser = await db.get(
+                    'SELECT * FROM users WHERE admin_id = ? AND role = "admin" AND is_active = 1',
+                    [identifier]
+                );
+
+                if (adminUser) {
+                    // Generate JWT token for admin
+                    const token = generateToken(adminUser.id, 'admin', { 
+                        restaurantId: restaurant.id,
+                        adminId: identifier
+                    });
+
+                    console.log(`✅ Admin logged in: ${identifier} for restaurant: ${restaurant.name}`);
+
+                    return res.status(200).json({
+                        success: true,
+                        message: 'Admin login successful',
+                        data: {
+                            token,
+                            user: {
+                                id: adminUser.id,
+                                name: adminUser.name,
+                                email: adminUser.email,
+                                role: 'admin',
+                                restaurantId: restaurant.id,
+                                restaurantName: restaurant.name,
+                                adminId: identifier
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
+        // Check for super admin
+        const superAdmin = await db.get(
+            'SELECT * FROM users WHERE email = ? AND role = "superadmin" AND is_active = 1',
+            [identifier]
+        );
+
+        if (superAdmin) {
+            const isValidPassword = await bcrypt.compare(password, superAdmin.password_hash);
+            if (isValidPassword) {
+                const token = generateToken(superAdmin.id, 'superadmin');
+
+                console.log(`✅ Super admin logged in: ${identifier}`);
+
+                return res.status(200).json({
+                    success: true,
+                    message: 'Super admin login successful',
+                    data: {
+                        token,
+                        user: {
+                            id: superAdmin.id,
+                            name: superAdmin.name,
+                            email: superAdmin.email,
+                            role: 'superadmin'
+                        }
+                    }
+                });
+            }
+        }
+
+        // Check for regular customer
         const user = await db.get(
             'SELECT * FROM login_users WHERE (email = ? OR phone = ?) AND is_active = 1',
             [identifier, identifier]
         );
 
-        if (!user) {
-            return res.status(401).json({
-                success: false,
-                message: 'Invalid credentials'
-            });
-        }
+        if (user) {
+            const isValidPassword = await bcrypt.compare(password, user.password_hash);
+            if (isValidPassword) {
+                const token = generateToken(user.id, user.role);
 
-        // Verify password
-        const isValidPassword = await bcrypt.compare(password, user.password_hash);
-        if (!isValidPassword) {
-            return res.status(401).json({
-                success: false,
-                message: 'Invalid credentials'
-            });
-        }
+                console.log(`✅ Customer logged in: ${identifier}`);
 
-        // Generate JWT token
-        const token = generateToken(user.id, user.role);
-
-        console.log(`✅ User logged in: ${identifier}`);
-
-        res.status(200).json({
-            success: true,
-            message: 'Login successful',
-            data: {
-                token,
-                user: {
-                    id: user.id,
-                    name: user.name,
-                    email: user.email,
-                    phone: user.phone,
-                    role: user.role
-                }
+                return res.status(200).json({
+                    success: true,
+                    message: 'Login successful',
+                    data: {
+                        token,
+                        user: {
+                            id: user.id,
+                            name: user.name,
+                            email: user.email,
+                            phone: user.phone,
+                            role: user.role
+                        }
+                    }
+                });
             }
+        }
+
+        // If we reach here, credentials are invalid
+        return res.status(401).json({
+            success: false,
+            message: 'Invalid email/password combination'
         });
 
     } catch (error) {
@@ -303,6 +371,75 @@ router.post('/login', loginValidation, handleValidationErrors, async (req, res) 
         res.status(500).json({
             success: false,
             message: 'Internal server error during login'
+        });
+    }
+});
+
+// POST /api/auth/auto-signup-login - Auto signup and login for new users
+router.post('/auto-signup-login', async (req, res) => {
+    try {
+        const { identifier, password, name } = req.body;
+
+        if (!identifier || !password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email/phone and password are required'
+            });
+        }
+
+        // Check if user already exists
+        const existingUser = await db.get(
+            'SELECT id FROM login_users WHERE email = ? OR phone = ?',
+            [identifier.includes('@') ? identifier : '', identifier.includes('@') ? '' : identifier]
+        );
+
+        if (existingUser) {
+            return res.status(400).json({
+                success: false,
+                message: 'User already exists. Please use login instead.'
+            });
+        }
+
+        // Create new user
+        const hashedPassword = await bcrypt.hash(password, 12);
+        const userName = name || 'Customer';
+        
+        const result = await db.run(
+            `INSERT INTO login_users (name, email, phone, password_hash, role, is_active) 
+             VALUES (?, ?, ?, ?, 'customer', 1)`,
+            [
+                userName, 
+                identifier.includes('@') ? identifier : null, 
+                identifier.includes('@') ? null : identifier, 
+                hashedPassword
+            ]
+        );
+
+        // Generate JWT token
+        const token = generateToken(result.id, 'customer');
+
+        console.log(`✅ New user auto-registered and logged in: ${identifier}`);
+
+        res.status(201).json({
+            success: true,
+            message: 'Account created and logged in successfully',
+            data: {
+                token,
+                user: {
+                    id: result.id,
+                    name: userName,
+                    email: identifier.includes('@') ? identifier : null,
+                    phone: identifier.includes('@') ? null : identifier,
+                    role: 'customer'
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Auto signup-login error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error during account creation'
         });
     }
 });

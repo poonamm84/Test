@@ -3,10 +3,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import HomePage from './pages/HomePage';
 import CustomerLogin from './pages/CustomerLogin';
 import CustomerDashboard from './pages/CustomerDashboard';
+import AdminLayout from './layouts/AdminLayout';
+import SuperAdminLayout from './layouts/SuperAdminLayout';
 import AdminLogin from './pages/AdminLogin';
-import AdminDashboard from './pages/AdminDashboard';
 import SuperAdminLogin from './pages/SuperAdminLogin';
-import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import RestaurantView from './pages/RestaurantView';
 import MenuView from './pages/MenuView';
 import BookingView from './pages/BookingView';
@@ -91,15 +91,15 @@ function App() {
                   </ProtectedRoute>
                 } />
                 
-                <Route path="/admin" element={
+                <Route path="/admin/*" element={
                   <ProtectedRoute role="admin">
-                    <AdminDashboard />
+                    <AdminLayout />
                   </ProtectedRoute>
                 } />
                 
-                <Route path="/super-admin" element={
+                <Route path="/super-admin/*" element={
                   <ProtectedRoute role="superadmin">
-                    <SuperAdminDashboard />
+                    <SuperAdminLayout />
                   </ProtectedRoute>
                 } />
                 

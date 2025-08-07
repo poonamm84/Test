@@ -25,8 +25,213 @@ const generateToken = (userId, role, additionalData = {}) => {
     );
 };
 
+// POST /api/auth/signup - Simple signup without OTP
+router.post('/signup', async (req, res) => {
+    try {
+        const { name, email, mobile, password } = req.body;
+
+        if (!name || !email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Name, email, and password are required'
+            });
+        }
+
+        // Check if user already exists
+        const existingUser = await db.get(
+            'SELECT id FROM signup_users WHERE email = ?',
+            [email]
+        );
+
+        if (existingUser) {
+            return res.status(400).json({
+                success: false,
+                message: 'User already exists, please sign in.'
+            });
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 12);
+
+        // Store in signup_users table
+        await db.run(
+            `INSERT INTO signup_users (name, email, phone, password_hash, is_verified) 
+             VALUES (?, ?, ?, ?, 1)`,
+            [name, email, mobile || null, hashedPassword]
+        );
+
+        // Move to login_users table immediately
+        const result = await db.run(
+            `INSERT INTO login_users (name, email, phone, password_hash, role, is_active) 
+             VALUES (?, ?, ?, ?, 'customer', 1)`,
+            [name, email, mobile || null, hashedPassword]
+        );
+
+        console.log(`✅ User registered: ${email}`);
+
+        res.status(201).json({
+            success: true,
+            message: 'Account created successfully'
+        });
+
+    } catch (error) {
+        console.error('Signup error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error during signup'
+        });
+    }
+});
+
+// POST /api/auth/send-otp - Send OTP to mobile number
+router.post('/send-otp', async (req, res) => {
+    try {
+        const { mobile } = req.body;
+
+        if (!mobile) {
+            return res.status(400).json({
+                success: false,
+                message: 'Mobile number is required'
+            });
+        }
+
+        // Check if mobile number exists in login_users
+        const user = await db.get(
+            'SELECT id, name FROM login_users WHERE phone = ? AND is_active = 1',
+            [mobile]
+        );
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Mobile number not registered. Please sign up first.'
+            });
+        }
+
+        // Generate OTP
+        const otp = generateOTP();
+        const otpExpires = getOTPExpiry();
+
+        console.log(`🔐 Generated OTP for ${mobile}: ${otp}`);
+
+        // Store OTP in otp_logs table
+        await db.run(
+            `INSERT INTO otp_logs (mobile, otp, expires_at, status, user_id) 
+             VALUES (?, ?, ?, 'unused', ?)`,
+            [mobile, otp, otpExpires, user.id]
+        );
+
+        // Send OTP via SMS
+        const smsResult = await sendSMS(mobile, `Your RestaurantAI login OTP is: ${otp}. Valid for 10 minutes.`);
+        
+        if (!smsResult.success) {
+            return res.status(500).json({
+                success: false,
+                message: 'Failed to send OTP. Please try again.'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'OTP sent successfully to your mobile number',
+            data: {
+                mobile,
+                expiresIn: '10 minutes'
+            }
+        });
+
+    } catch (error) {
+        console.error('Send OTP error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error while sending OTP'
+        });
+    }
+});
+
+// POST /api/auth/verify-otp-login - Verify OTP and login
+router.post('/verify-otp-login', async (req, res) => {
+    try {
+        const { mobile, otp } = req.body;
+
+        if (!mobile || !otp) {
+            return res.status(400).json({
+                success: false,
+                message: 'Mobile number and OTP are required'
+            });
+        }
+
+        // Find valid OTP
+        const otpRecord = await db.get(
+            'SELECT * FROM otp_logs WHERE mobile = ? AND otp = ? AND status = "unused" ORDER BY created_at DESC LIMIT 1',
+            [mobile, otp]
+        );
+
+        if (!otpRecord) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid OTP'
+            });
+        }
+
+        // Check if OTP is expired
+        if (isOTPExpired(otpRecord.expires_at)) {
+            return res.status(400).json({
+                success: false,
+                message: 'OTP has expired. Please request a new one.'
+            });
+        }
+
+        // Get user details
+        const user = await db.get(
+            'SELECT * FROM login_users WHERE phone = ? AND is_active = 1',
+            [mobile]
+        );
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        // Mark OTP as used
+        await db.run(
+            'UPDATE otp_logs SET status = "used" WHERE id = ?',
+            [otpRecord.id]
+        );
+
+        // Generate JWT token
+        const token = generateToken(user.id, user.role);
+
+        console.log(`✅ User logged in via OTP: ${mobile}`);
+
+        res.status(200).json({
+            success: true,
+            message: 'Login successful',
+            data: {
+                token,
+                user: {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    phone: user.phone,
+                    role: user.role
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('OTP login verification error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error during OTP verification'
+        });
+    }
+});
+
 // POST /api/auth/signup - User signup with OTP
-router.post('/signup', signupValidation, handleValidationErrors, async (req, res) => {
+router.post('/signup-with-otp', signupValidation, handleValidationErrors, async (req, res) => {
     try {
         const { name, email, phone, password } = req.body;
         const identifier = email || phone;

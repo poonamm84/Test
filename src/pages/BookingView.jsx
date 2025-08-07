@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, Clock, Users, ArrowLeft, Check, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 
 function App() {
@@ -8,7 +9,11 @@ function App() {
   const [selectedTable, setSelectedTable] = useState(null);
   const [showImageView, setShowImageView] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [tablePhotos, setTablePhotos] = useState([]);
+  const [isLoadingPhotos, setIsLoadingPhotos] = useState(false);
   const navigate = useNavigate();
+  const { id } = useParams();
+  const { apiCall } = useAuth();
   const [bookingData, setBookingData] = useState({
     date: '',
     time: '',
@@ -16,8 +21,48 @@ function App() {
     specialRequests: ''
   });
 
+  // Load table photos from admin uploads
+  React.useEffect(() => {
+    loadTablePhotos();
+  }, []);
+
+  const loadTablePhotos = async () => {
+    setIsLoadingPhotos(true);
+    try {
+      const response = await fetch(`http://localhost:5000/api/restaurants/${id}/table-photos`);
+      const result = await response.json();
+      
+      if (result.success) {
+        setTablePhotos(result.data);
+        // Update table types with real photos
+        updateTableTypesWithPhotos(result.data);
+      }
+    } catch (error) {
+      console.error('Failed to load table photos:', error);
+    } finally {
+      setIsLoadingPhotos(false);
+    }
+  };
+
+  const updateTableTypesWithPhotos = (photos) => {
+    const photosByType = photos.reduce((acc, photo) => {
+      if (!acc[photo.table_type]) {
+        acc[photo.table_type] = [];
+      }
+      acc[photo.table_type].push(`http://localhost:5000${photo.photo_path}`);
+      return acc;
+    }, {});
+
+    // Update tableTypes with real photos
+    setTableTypes(prev => prev.map(table => ({
+      ...table,
+      gallery: photosByType[table.type] || table.gallery,
+      image: photosByType[table.type]?.[0] || table.image
+    })));
+  };
+
   // Table types with detailed information and updated gallery images
-  const tableTypes = [
+  const [tableTypes, setTableTypes] = useState([
     {
       id: 1,
       name: "Couple Table",
@@ -67,7 +112,7 @@ function App() {
         "/group 2.jpg",
       ]
     }
-  ];
+  ]);
 
   const handleTableSelect = (table) => {
     setSelectedTable(table);

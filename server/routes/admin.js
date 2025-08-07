@@ -3,8 +3,42 @@ const bcrypt = require('bcryptjs');
 const db = require('../config/database');
 const { authenticateToken, authorizeRole, authorizeRestaurantAdmin } = require('../middleware/auth');
 const { body, validationResult } = require('express-validator');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 
 const router = express.Router();
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadDir = path.join(__dirname, '..', 'uploads', 'photos');
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'table-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter: function (req, file, cb) {
+        const allowedTypes = /jpeg|jpg|png|gif/;
+        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+        const mimetype = allowedTypes.test(file.mimetype);
+        
+        if (mimetype && extname) {
+            return cb(null, true);
+        } else {
+            cb(new Error('Only image files are allowed'));
+        }
+    }
+});
 
 // Middleware to ensure admin access
 router.use(authenticateToken);
@@ -470,6 +504,128 @@ router.get('/bookings', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Internal server error while fetching bookings'
+        });
+    }
+});
+
+// GET /api/admin/table-photos - Get table photos for admin's restaurant
+router.get('/table-photos', async (req, res) => {
+    try {
+        const restaurantId = req.user.restaurant_id;
+
+        const photos = await db.all(`
+            SELECT id, table_type, photo_path, description, is_active, created_at
+            FROM table_photos 
+            WHERE restaurant_id = ? AND is_active = 1
+            ORDER BY table_type, created_at DESC
+        `, [restaurantId]);
+
+        res.status(200).json({
+            success: true,
+            message: 'Table photos retrieved successfully',
+            data: photos
+        });
+
+    } catch (error) {
+        console.error('Get table photos error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error while fetching table photos'
+        });
+    }
+});
+
+// POST /api/admin/table-photos - Upload table photo
+router.post('/table-photos', upload.single('photo'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'Photo file is required'
+            });
+        }
+
+        const { table_type, description } = req.body;
+        const restaurantId = req.user.restaurant_id;
+        const photoPath = `/uploads/photos/${req.file.filename}`;
+
+        if (!table_type) {
+            return res.status(400).json({
+                success: false,
+                message: 'Table type is required'
+            });
+        }
+
+        const result = await db.run(`
+            INSERT INTO table_photos (restaurant_id, table_type, photo_path, description)
+            VALUES (?, ?, ?, ?)
+        `, [restaurantId, table_type, photoPath, description || null]);
+
+        console.log(`✅ Table photo uploaded: ${table_type} by Admin ${req.user.id}`);
+
+        res.status(201).json({
+            success: true,
+            message: 'Table photo uploaded successfully',
+            data: {
+                id: result.id,
+                table_type,
+                photo_path: photoPath,
+                description
+            }
+        });
+
+    } catch (error) {
+        console.error('Upload table photo error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error while uploading photo'
+        });
+    }
+});
+
+// DELETE /api/admin/table-photos/:id - Delete table photo
+router.delete('/table-photos/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const restaurantId = req.user.restaurant_id;
+
+        // Get photo details
+        const photo = await db.get(
+            'SELECT photo_path FROM table_photos WHERE id = ? AND restaurant_id = ?',
+            [id, restaurantId]
+        );
+
+        if (!photo) {
+            return res.status(404).json({
+                success: false,
+                message: 'Photo not found'
+            });
+        }
+
+        // Delete from database
+        await db.run(
+            'DELETE FROM table_photos WHERE id = ? AND restaurant_id = ?',
+            [id, restaurantId]
+        );
+
+        // Delete file from filesystem
+        const filePath = path.join(__dirname, '..', photo.photo_path);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+
+        console.log(`✅ Table photo deleted: ID ${id} by Admin ${req.user.id}`);
+
+        res.status(200).json({
+            success: true,
+            message: 'Table photo deleted successfully'
+        });
+
+    } catch (error) {
+        console.error('Delete table photo error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error while deleting photo'
         });
     }
 });

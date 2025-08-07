@@ -203,6 +203,34 @@ async function setupDatabase() {
             )
         `);
 
+        // Create otp_logs table
+        db.run(`
+            CREATE TABLE IF NOT EXISTS otp_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                mobile TEXT NOT NULL,
+                otp TEXT NOT NULL,
+                expires_at DATETIME NOT NULL,
+                status TEXT DEFAULT 'unused',
+                user_id INTEGER,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES login_users (id)
+            )
+        `);
+
+        // Create table_photos table
+        db.run(`
+            CREATE TABLE IF NOT EXISTS table_photos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                restaurant_id INTEGER NOT NULL,
+                table_type TEXT NOT NULL,
+                photo_path TEXT NOT NULL,
+                description TEXT,
+                is_active BOOLEAN DEFAULT 1,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (restaurant_id) REFERENCES restaurants (id)
+            )
+        `);
+
         // Wait for all table creation to complete
         await new Promise((resolve) => setTimeout(resolve, 1000));
 

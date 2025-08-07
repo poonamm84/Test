@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChefHat, Phone, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { ChefHat, Phone, ArrowLeft, Eye, EyeOff, Send } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 
 const CustomerLogin = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [loginMethod, setLoginMethod] = useState('email');
+  const [loginMethod, setLoginMethod] = useState('email'); // 'email' or 'otp'
   const [formData, setFormData] = useState({
     name: '',
     mobile: '',
@@ -14,8 +14,15 @@ const CustomerLogin = () => {
     password: '',
     confirmPassword: '',
   });
+  const [otpData, setOtpData] = useState({
+    mobile: '',
+    otp: '',
+    otpSent: false,
+    otpVerified: false
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
 
   const navigate = useNavigate();
   const { login, apiCall } = useAuth();
@@ -28,8 +35,74 @@ const CustomerLogin = () => {
     }));
   };
 
+  const handleOtpInputChange = (e) => {
+    setOtpData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
+
+  const handleSendOtp = async () => {
+    if (!otpData.mobile) {
+      addNotification('Please enter your mobile number', 'error');
+      return;
+    }
+
+    setIsSendingOtp(true);
+    try {
+      const response = await apiCall('/auth/send-otp', {
+        method: 'POST',
+        body: { mobile: otpData.mobile }
+      });
+
+      if (response.success) {
+        setOtpData(prev => ({ ...prev, otpSent: true }));
+        addNotification('OTP sent successfully to your mobile number', 'success');
+      }
+    } catch (error) {
+      addNotification(error.message || 'Failed to send OTP', 'error');
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  const handleOtpLogin = async () => {
+    if (!otpData.mobile || !otpData.otp) {
+      addNotification('Please enter mobile number and OTP', 'error');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await apiCall('/auth/verify-otp-login', {
+        method: 'POST',
+        body: {
+          mobile: otpData.mobile,
+          otp: otpData.otp
+        }
+      });
+
+      if (response.success) {
+        const user = response.data.user;
+        login(user, user.role, response.data.token);
+        addNotification('Login successful!', 'success');
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      addNotification(error.message || 'OTP verification failed', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Handle OTP login
+    if (isLogin && loginMethod === 'otp') {
+      handleOtpLogin();
+      return;
+    }
     
     // Validation for signup
     if (!isLogin) {
@@ -37,7 +110,7 @@ const CustomerLogin = () => {
         addNotification('Passwords do not match', 'error');
         return;
       }
-      if (!formData.name || !formData.mobile || !formData.email || !formData.password) {
+      if (!formData.name || !formData.email || !formData.password) {
         addNotification('Please fill in all required fields', 'error');
         return;
       }
@@ -45,9 +118,46 @@ const CustomerLogin = () => {
     
     setIsLoading(true);
 
-    const identifier = loginMethod === 'mobile' ? formData.mobile : formData.email;
+    if (!isLogin) {
+      // Handle signup
+      apiCall('/auth/signup', {
+        method: 'POST',
+        body: {
+          name: formData.name,
+          email: formData.email,
+          mobile: formData.mobile,
+          password: formData.password
+        }
+      })
+      .then(response => {
+        if (response.success) {
+          addNotification('Account created successfully! Please sign in.', 'success');
+          setIsLogin(true);
+          setFormData({
+            name: '',
+            mobile: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+          });
+        }
+      })
+      .catch(error => {
+        if (error.message.includes('already exists')) {
+          addNotification('User already exists, please sign in.', 'error');
+          setIsLogin(true);
+        } else {
+          addNotification(error.message || 'Signup failed', 'error');
+        }
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+      return;
+    }
 
-    // First try to login
+    // Handle regular email/password login
+    const identifier = formData.email;
     apiCall('/auth/login', {
       method: 'POST',
       body: {
@@ -72,35 +182,8 @@ const CustomerLogin = () => {
       }
     })
     .catch(error => {
-      // If login fails and we're in signup mode, try auto-signup
-      if (!isLogin && error.message.includes('Invalid email/password')) {
-        apiCall('/auth/auto-signup-login', {
-          method: 'POST',
-          body: {
-            identifier,
-            password: formData.password,
-            name: formData.name,
-            mobile: formData.mobile,
-            email: formData.email
-          }
-        })
-        .then(response => {
-          if (response.success) {
-            login(response.data.user, response.data.user.role, response.data.token);
-            addNotification('Account created and logged in successfully!', 'success');
-            navigate('/dashboard');
-          }
-        })
-        .catch(signupError => {
-          addNotification(signupError.message || 'Failed to create account', 'error');
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
-      } else {
-        addNotification(error.message || 'Login failed', 'error');
-        setIsLoading(false);
-      }
+      addNotification(error.message || 'Login failed', 'error');
+      setIsLoading(false);
     });
   };
 
@@ -157,29 +240,31 @@ const CustomerLogin = () => {
             </div>
 
             {/* Login Method Selector */}
-            <div className="flex space-x-2 mb-6">
-              <button
-                onClick={() => setLoginMethod('email')}
-                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all flex items-center justify-center space-x-2 ${
-                  loginMethod === 'email'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white/10 text-gray-300 hover:bg-white/20'
-                }`}
-              >
-                <span>Email</span>
-              </button>
-              <button
-                onClick={() => setLoginMethod('mobile')}
-                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all flex items-center justify-center space-x-2 ${
-                  loginMethod === 'mobile'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white/10 text-gray-300 hover:bg-white/20'
-                }`}
-              >
-                <Phone className="w-4 h-4" />
-                <span>Mobile</span>
-              </button>
-            </div>
+            {isLogin && (
+              <div className="flex space-x-2 mb-6">
+                <button
+                  onClick={() => setLoginMethod('email')}
+                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all flex items-center justify-center space-x-2 ${
+                    loginMethod === 'email'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                  }`}
+                >
+                  <span>Email</span>
+                </button>
+                <button
+                  onClick={() => setLoginMethod('otp')}
+                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all flex items-center justify-center space-x-2 ${
+                    loginMethod === 'otp'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                  }`}
+                >
+                  <Phone className="w-4 h-4" />
+                  <span>OTP</span>
+                </button>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               {!isLogin && (
@@ -199,24 +284,25 @@ const CustomerLogin = () => {
                 </div>
               )}
 
-              {!isLogin && (
+              {(!isLogin || (isLogin && loginMethod === 'otp')) && (
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Mobile Number *
+                    Mobile Number {!isLogin ? '*' : ''}
                   </label>
                   <input
                     type="tel"
-                    name="mobile"
-                    value={formData.mobile}
-                    onChange={handleInputChange}
+                    name={isLogin ? "mobile" : "mobile"}
+                    value={isLogin && loginMethod === 'otp' ? otpData.mobile : formData.mobile}
+                    onChange={isLogin && loginMethod === 'otp' ? handleOtpInputChange : handleInputChange}
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm"
                     placeholder="Enter your mobile number"
-                    required
+                    required={!isLogin}
                   />
                 </div>
               )}
 
-              {loginMethod === 'email' && (
+              {/* Email field for signup or email login */}
+              {(!isLogin || (isLogin && loginMethod === 'email')) && (
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     Email Address {!isLogin ? '*' : ''}
@@ -233,24 +319,44 @@ const CustomerLogin = () => {
                 </div>
               )}
 
-              {loginMethod === 'mobile' && (
+              {/* OTP Section for mobile login */}
+              {isLogin && loginMethod === 'otp' && (
+                <div>
+                  <div className="flex space-x-2">
+                    <button
+                      type="button"
+                      onClick={handleSendOtp}
+                      disabled={isSendingOtp || !otpData.mobile}
+                      className="bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                    >
+                      <Send className="w-4 h-4" />
+                      <span>{isSendingOtp ? 'Sending...' : 'Send OTP'}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* OTP Input */}
+              {isLogin && loginMethod === 'otp' && otpData.otpSent && (
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Mobile Number
+                    Enter OTP
                   </label>
                   <input
-                    type="tel"
-                    name="mobile"
-                    value={formData.mobile}
-                    onChange={handleInputChange}
+                    type="text"
+                    name="otp"
+                    value={otpData.otp}
+                    onChange={handleOtpInputChange}
                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent backdrop-blur-sm"
-                    placeholder="Enter your mobile number"
+                    placeholder="Enter 6-digit OTP"
+                    maxLength={6}
                     required
                   />
                 </div>
               )}
 
-              <div>
+              {/* Password field for signup or email login */}
+              {(!isLogin || (isLogin && loginMethod === 'email')) && (
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     Password {!isLogin ? '*' : ''}
@@ -274,7 +380,7 @@ const CustomerLogin = () => {
                     </button>
                   </div>
                 </div>
-              </div>
+              )}
 
               {!isLogin && (
                 <div>
@@ -295,10 +401,12 @@ const CustomerLogin = () => {
 
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || (isLogin && loginMethod === 'otp' && !otpData.otpSent)}
                 className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
-                {isLoading ? 'Processing...' : isLogin ? 'Sign In' : 'Create Account'}
+                {isLoading ? 'Processing...' : 
+                 isLogin ? (loginMethod === 'otp' ? 'Verify OTP' : 'Sign In') : 
+                 'Create Account'}
               </button>
             </form>
 

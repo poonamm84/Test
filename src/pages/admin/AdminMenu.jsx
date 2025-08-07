@@ -10,7 +10,9 @@ import {
   Filter,
   Star,
   Eye,
-  EyeOff
+  EyeOff,
+  Camera,
+  Upload
 } from 'lucide-react';
 
 const AdminMenu = () => {
@@ -24,6 +26,14 @@ const AdminMenu = () => {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [tablePhotos, setTablePhotos] = useState([]);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [newPhoto, setNewPhoto] = useState({
+    table_type: '',
+    description: '',
+    file: null
+  });
   const [newItem, setNewItem] = useState({
     name: '',
     category: '',
@@ -36,6 +46,7 @@ const AdminMenu = () => {
 
   useEffect(() => {
     loadMenuItems();
+    loadTablePhotos();
   }, []);
 
   useEffect(() => {
@@ -53,6 +64,73 @@ const AdminMenu = () => {
       addNotification('Failed to load menu items', 'error');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadTablePhotos = async () => {
+    try {
+      const response = await apiCall('/admin/table-photos');
+      if (response.success) {
+        setTablePhotos(response.data);
+      }
+    } catch (error) {
+      console.error('Failed to load table photos:', error);
+    }
+  };
+
+  const handlePhotoUpload = async (e) => {
+    e.preventDefault();
+    if (!newPhoto.file || !newPhoto.table_type) {
+      addNotification('Please select a file and table type', 'error');
+      return;
+    }
+
+    setUploadingPhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append('photo', newPhoto.file);
+      formData.append('table_type', newPhoto.table_type);
+      formData.append('description', newPhoto.description);
+
+      const response = await fetch('http://localhost:5000/api/admin/table-photos', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: formData
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        addNotification('Table photo uploaded successfully', 'success');
+        setShowPhotoModal(false);
+        setNewPhoto({ table_type: '', description: '', file: null });
+        loadTablePhotos();
+      } else {
+        addNotification(result.message || 'Failed to upload photo', 'error');
+      }
+    } catch (error) {
+      addNotification('Failed to upload photo', 'error');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const deleteTablePhoto = async (photoId) => {
+    if (!confirm('Are you sure you want to delete this photo?')) return;
+
+    try {
+      const response = await apiCall(`/admin/table-photos/${photoId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.success) {
+        addNotification('Photo deleted successfully', 'success');
+        loadTablePhotos();
+      }
+    } catch (error) {
+      addNotification('Failed to delete photo', 'error');
     }
   };
 
@@ -159,13 +237,22 @@ const AdminMenu = () => {
           <h1 className="text-2xl font-bold text-gray-900">Menu Management</h1>
           <p className="text-gray-600">Manage your restaurant's menu items and pricing</p>
         </div>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 flex items-center space-x-2"
-        >
-          <Plus className="w-5 h-5" />
-          <span>Add Menu Item</span>
-        </button>
+        <div className="flex space-x-3">
+          <button
+            onClick={() => setShowPhotoModal(true)}
+            className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-300 flex items-center space-x-2"
+          >
+            <Camera className="w-5 h-5" />
+            <span>Table Photos</span>
+          </button>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 flex items-center space-x-2"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Add Menu Item</span>
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -464,6 +551,120 @@ const AdminMenu = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Table Photos Modal */}
+      {showPhotoModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-10 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-medium text-gray-900">Table Photos Management</h3>
+                <button
+                  onClick={() => setShowPhotoModal(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              {/* Upload Form */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                <h4 className="font-medium text-gray-900 mb-4">Upload New Table Photo</h4>
+                <form onSubmit={handlePhotoUpload} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Table Type</label>
+                      <select
+                        value={newPhoto.table_type}
+                        onChange={(e) => setNewPhoto({...newPhoto, table_type: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                      >
+                        <option value="">Select table type</option>
+                        <option value="couple">Couple Table</option>
+                        <option value="family">Family Table</option>
+                        <option value="group">Large Group Table</option>
+                        <option value="private">Private Dining</option>
+                        <option value="outdoor">Outdoor Seating</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Photo</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setNewPhoto({...newPhoto, file: e.target.files[0]})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Description (Optional)</label>
+                    <input
+                      type="text"
+                      value={newPhoto.description}
+                      onChange={(e) => setNewPhoto({...newPhoto, description: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Brief description of the table"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={uploadingPhoto}
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center space-x-2"
+                  >
+                    <Upload className="w-4 h-4" />
+                    <span>{uploadingPhoto ? 'Uploading...' : 'Upload Photo'}</span>
+                  </button>
+                </form>
+              </div>
+
+              {/* Existing Photos */}
+              <div>
+                <h4 className="font-medium text-gray-900 mb-4">Existing Table Photos</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+                  {tablePhotos.map((photo) => (
+                    <div key={photo.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                      <img
+                        src={`http://localhost:5000${photo.photo_path}`}
+                        alt={photo.table_type}
+                        className="w-full h-32 object-cover"
+                      />
+                      <div className="p-3">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <p className="font-medium text-gray-900 capitalize">{photo.table_type}</p>
+                            {photo.description && (
+                              <p className="text-sm text-gray-600">{photo.description}</p>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => deleteTablePhoto(photo.id)}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          Uploaded: {new Date(photo.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {tablePhotos.length === 0 && (
+                  <div className="text-center py-8">
+                    <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">No table photos uploaded yet</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

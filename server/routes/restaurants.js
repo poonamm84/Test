@@ -158,4 +158,44 @@ router.get('/:id/tables', async (req, res) => {
     }
 });
 
+// GET /api/restaurants/:id/table-photos - Get table photos for a restaurant (public)
+router.get('/:id/table-photos', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Verify restaurant exists
+        const restaurant = await db.get(
+            'SELECT id FROM restaurants WHERE id = ? AND is_active = 1',
+            [id]
+        );
+
+        if (!restaurant) {
+            return res.status(404).json({
+                success: false,
+                message: 'Restaurant not found'
+            });
+        }
+
+        const photos = await db.all(`
+            SELECT id, table_type, photo_path, description, created_at
+            FROM table_photos 
+            WHERE restaurant_id = ? AND is_active = 1
+            ORDER BY table_type, created_at DESC
+        `, [id]);
+
+        res.status(200).json({
+            success: true,
+            message: 'Table photos retrieved successfully',
+            data: photos
+        });
+
+    } catch (error) {
+        console.error('Get table photos error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error while fetching table photos'
+        });
+    }
+});
+
 module.exports = router;

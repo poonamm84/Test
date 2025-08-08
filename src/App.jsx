@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import CustomerLogin from './pages/CustomerLogin';
+import CustomerSignup from './pages/CustomerSignup';
 import CustomerDashboard from './pages/CustomerDashboard';
 import AdminLayout from './layouts/AdminLayout';
 import SuperAdminLayout from './layouts/SuperAdminLayout';
@@ -52,6 +53,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<CustomerLogin />} />
+                <Route path="/signup" element={<CustomerSignup />} />
                 <Route path="/admin-dashboard-secret-portal-2025" element={<AdminLogin />} />
                 <Route path="/super-admin-control" element={<SuperAdminLogin />} />
                 

@@ -18,10 +18,10 @@ const HomePage = () => {
                 to="/login"
                 className="px-3 py-2 md:px-6 md:py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-all duration-300 backdrop-blur-sm border border-white/20 text-sm md:text-base"
               >
-                <span className="hidden sm:inline">Customer </span>Login
+                Login
               </Link>
               <Link
-                to="/login"
+                to="/signup"
                 className="px-3 py-2 md:px-6 md:py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg text-sm md:text-base"
               >
                 Sign Up

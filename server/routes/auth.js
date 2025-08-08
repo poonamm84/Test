@@ -67,7 +67,6 @@ router.post('/signup', async (req, res) => {
             [name, email, mobile || null, hashedPassword]
         );
 
-        console.log(`✅ User registered: ${email}`);
 
         res.status(201).json({
             success: true,
@@ -112,7 +111,6 @@ router.post('/send-otp', async (req, res) => {
         const otp = generateOTP();
         const otpExpires = getOTPExpiry();
 
-        console.log(`🔐 Generated OTP for ${mobile}: ${otp}`);
 
         // Store OTP in otp_logs table
         await db.run(
@@ -204,7 +202,6 @@ router.post('/verify-otp-login', async (req, res) => {
         // Generate JWT token
         const token = generateToken(user.id, user.role);
 
-        console.log(`✅ User logged in via OTP: ${mobile}`);
 
         res.status(200).json({
             success: true,
@@ -256,7 +253,6 @@ router.post('/signup-with-otp', signupValidation, handleValidationErrors, async 
         const otp = generateOTP();
         const otpExpires = getOTPExpiry();
 
-        console.log(`🔐 Generated OTP for ${identifier}: ${otp}`);
 
         // Store in signup_users table
         const result = await db.run(
@@ -349,7 +345,6 @@ router.post('/verify-otp', otpValidation, handleValidationErrors, async (req, re
         // Generate JWT token
         const token = generateToken(result.id, 'customer');
 
-        console.log(`✅ User verified and registered: ${identifier}`);
 
         res.status(201).json({
             success: true,
@@ -404,7 +399,6 @@ router.post('/resend-otp', async (req, res) => {
         const otp = generateOTP();
         const otpExpires = getOTPExpiry();
 
-        console.log(`🔐 Resent OTP for ${identifier}: ${otp}`);
 
         // Update OTP in database
         await db.run(
@@ -517,7 +511,6 @@ router.post('/login', loginValidation, handleValidationErrors, async (req, res) 
             if (isValidPassword) {
                 const token = generateToken(superAdmin.id, 'superadmin');
 
-                console.log(`✅ Super admin logged in: ${identifier}`);
 
                 return res.status(200).json({
                     success: true,
@@ -546,7 +539,6 @@ router.post('/login', loginValidation, handleValidationErrors, async (req, res) 
             if (isValidPassword) {
                 const token = generateToken(user.id, user.role);
 
-                console.log(`✅ Customer logged in: ${identifier}`);
 
                 return res.status(200).json({
                     success: true,
@@ -623,7 +615,6 @@ router.post('/auto-signup-login', async (req, res) => {
         // Generate JWT token
         const token = generateToken(result.id, 'customer');
 
-        console.log(`✅ New user auto-registered and logged in: ${identifier}`);
 
         res.status(201).json({
             success: true,
@@ -695,8 +686,6 @@ router.post('/admin-login', adminLoginValidation, handleValidationErrors, async 
             adminId: adminId
         });
 
-        console.log(`✅ Admin logged in: ${adminId} for restaurant: ${restaurant.name}`);
-
         res.status(200).json({
             success: true,
             message: 'Admin login successful',
@@ -761,7 +750,6 @@ router.post('/super-admin-login', superAdminLoginValidation, handleValidationErr
         // Generate JWT token
         const token = generateToken(superAdmin.id, 'superadmin');
 
-        console.log(`✅ Super admin logged in: ${email}`);
 
         res.status(200).json({
             success: true,

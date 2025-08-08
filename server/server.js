@@ -54,7 +54,10 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Request logging middleware
 app.use((req, res, next) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+    // Only log non-OTP requests to reduce console noise
+    if (!req.path.includes('/send-otp') && !req.path.includes('/verify-otp')) {
+        console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+    }
     next();
 });
 

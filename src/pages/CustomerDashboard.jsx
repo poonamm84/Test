@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
@@ -8,10 +8,24 @@ import NotificationToast from '../components/NotificationToast';
 
 const CustomerDashboard = () => {
   const { user, logout } = useAuth();
-  const { restaurants } = useData();
+  const { restaurants, refreshData, lastUpdate } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCuisine, setSelectedCuisine] = useState('all');
   const [favorites, setFavorites] = useState([]);
+
+  // Refresh data every 30 seconds to keep tables in sync
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refreshData();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [refreshData]);
+
+  // React to data updates
+  useEffect(() => {
+    console.log('Restaurant data updated at:', new Date(lastUpdate));
+  }, [lastUpdate]);
 
   const cuisines = ['all', 'Fine Dining', 'Japanese', 'Italian', 'Indian', 'Mexican'];
 
@@ -20,7 +34,11 @@ const CustomerDashboard = () => {
                          restaurant.cuisine.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCuisine = selectedCuisine === 'all' || restaurant.cuisine === selectedCuisine;
     return matchesSearch && matchesCuisine;
-  });
+  }).map(restaurant => ({
+    ...restaurant,
+    // Ensure only 3 tables are shown and they have proper available count
+    tables: restaurant.tables.slice(0, 3)
+  }));
 
   const toggleFavorite = (restaurantId) => {
     setFavorites(prev => 
@@ -168,7 +186,7 @@ const CustomerDashboard = () => {
                     </div>
                     <div className="flex items-center space-x-1">
                       <Users className="w-3 h-3 md:w-4 md:h-4" />
-                      <span>{restaurant.tables.filter(t => t.status === 'available').length} tables</span>
+                      <span>{restaurant.tables.filter(t => t.status === 'available').length} available</span>
                     </div>
                   </div>
                   

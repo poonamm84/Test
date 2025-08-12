@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const DataContext = createContext();
 
@@ -21,17 +21,7 @@ const mockRestaurants = [
     address: "123 Gourmet Street, Downtown",
     phone: "+1 (555) 123-4567",
     description: "Exquisite fine dining experience with contemporary cuisine",
-    tables: Array.from({ length: 20 }, (_, i) => ({
-      id: i + 1,
-      number: i + 1,
-      capacity: [2, 4, 6, 8][Math.floor(Math.random() * 4)],
-      status: i < 12 ? 'available' : ['reserved', 'occupied', 'cleaning'][Math.floor(Math.random() * 3)],
-      x: (i % 5) * 18 + 10,
-      y: Math.floor(i / 5) * 20 + 10,
-      image: `https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop&crop=center`,
-      type: ['window', 'corner', 'center', 'private'][Math.floor(Math.random() * 4)],
-      features: ['WiFi', 'Power Outlet', 'Premium View', 'Quiet Zone']
-    }))
+    tables: []  // Will be populated from API
   },
   {
     id: 2,
@@ -42,17 +32,7 @@ const mockRestaurants = [
     address: "456 Zen Garden Ave, Midtown",
     phone: "+1 (555) 234-5678",
     description: "Authentic Japanese cuisine with fresh sushi and sashimi",
-    tables: Array.from({ length: 15 }, (_, i) => ({
-      id: i + 1,
-      number: i + 1,
-      capacity: [2, 4, 6][Math.floor(Math.random() * 3)],
-      status: i < 10 ? 'available' : ['reserved', 'occupied', 'cleaning'][Math.floor(Math.random() * 3)],
-      x: (i % 5) * 18 + 10,
-      y: Math.floor(i / 5) * 20 + 10,
-      image: `https://images.pexels.com/photos/941861/pexels-photo-941861.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop&crop=center`,
-      type: ['window', 'corner', 'center', 'private'][Math.floor(Math.random() * 4)],
-      features: ['WiFi', 'Sushi Bar View', 'Traditional Seating', 'Sake Pairing']
-    }))
+    tables: []  // Will be populated from API
   },
   {
     id: 3,
@@ -63,17 +43,7 @@ const mockRestaurants = [
     address: "789 Pasta Lane, Little Italy",
     phone: "+1 (555) 345-6789",
     description: "Traditional Italian flavors in a cozy family atmosphere",
-    tables: Array.from({ length: 18 }, (_, i) => ({
-      id: i + 1,
-      number: i + 1,
-      capacity: [2, 4, 6, 8][Math.floor(Math.random() * 4)],
-      status: i < 14 ? 'available' : ['reserved', 'occupied', 'cleaning'][Math.floor(Math.random() * 3)],
-      x: (i % 6) * 15 + 8,
-      y: Math.floor(i / 6) * 18 + 8,
-      image: `https://images.pexels.com/photos/776538/pexels-photo-776538.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop&crop=center`,
-      type: ['window', 'corner', 'center', 'private'][Math.floor(Math.random() * 4)],
-      features: ['WiFi', 'Wine Cellar View', 'Family Friendly', 'Romantic Ambiance']
-    }))
+    tables: []  // Will be populated from API
   }
 ];
 
@@ -202,6 +172,48 @@ export const DataProvider = ({ children }) => {
   const [orders, setOrders] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [cart, setCart] = useState([]);
+  const [lastUpdate, setLastUpdate] = useState(Date.now());
+  
+  // Fetch tables from API for customer dashboard (limit to 3)
+  const fetchTablesForCustomer = async () => {
+    try {
+      // For customer dashboard, we'll fetch tables from each restaurant and limit to 3
+      const updatedRestaurants = await Promise.all(mockRestaurants.map(async (restaurant) => {
+        try {
+          const response = await fetch(`http://localhost:5000/api/restaurants/${restaurant.id}/tables`);
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+              // Limit to 3 tables for customer display
+              const limitedTables = result.data.slice(0, 3).map(table => ({
+                id: table.id,
+                number: table.table_number,
+                capacity: table.capacity,
+                status: table.status,
+                type: table.type,
+                features: table.features ? table.features.split(',') : [],
+                image: table.primary_image ? `http://localhost:5000${table.primary_image}` : 
+                      `https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop&crop=center`
+              }));
+              return { ...restaurant, tables: limitedTables };
+            }
+          }
+        } catch (error) {
+          console.error(`Error fetching tables for restaurant ${restaurant.id}:`, error);
+        }
+        return restaurant;
+      }));
+      
+      setRestaurants(updatedRestaurants);
+      setLastUpdate(Date.now()); // Update timestamp to trigger re-renders
+    } catch (error) {
+      console.error('Error fetching tables:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTablesForCustomer();
+  }, []);
   
   // Admin functionality
   const updateRestaurant = (restaurantId, updates) => {
@@ -261,6 +273,7 @@ export const DataProvider = ({ children }) => {
     orders,
     bookings,
     cart,
+    lastUpdate,
     updateRestaurant,
     addMenuItem,
     updateMenuItem,
@@ -270,7 +283,9 @@ export const DataProvider = ({ children }) => {
     clearCart,
     addBooking,
     updateTableStatus,
-    getMenuItems
+    getMenuItems,
+    fetchTablesForCustomer,
+    refreshData: fetchTablesForCustomer  // Alias for refreshing data
   };
 
   return (

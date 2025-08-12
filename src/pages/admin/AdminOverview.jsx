@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
+import { useData } from '../../context/DataContext';
 import { 
   TrendingUp, 
   Users, 
@@ -19,6 +20,7 @@ import {
 const AdminOverview = () => {
   const { apiCall } = useAuth();
   const { addNotification } = useNotification();
+  const { refreshData } = useData();
   
   const [dashboardData, setDashboardData] = useState({
     stats: {},

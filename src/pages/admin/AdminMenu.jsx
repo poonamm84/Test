@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
+import { useData } from '../../context/DataContext';
 import { 
   ChefHat, 
   Plus, 
@@ -20,6 +21,7 @@ import {
 const AdminMenu = () => {
   const { apiCall } = useAuth();
   const { addNotification } = useNotification();
+  const { refreshData } = useData();
   
   const [menuItems, setMenuItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
@@ -93,6 +95,12 @@ const AdminMenu = () => {
     }
 
     try {
+      console.log('Adding table with data:', {
+        ...newTable,
+        table_number: parseInt(newTable.table_number),
+        capacity: parseInt(newTable.capacity)
+      });
+      
       const response = await apiCall('/admin/tables', {
         method: 'POST',
         body: {
@@ -101,6 +109,8 @@ const AdminMenu = () => {
           capacity: parseInt(newTable.capacity)
         }
       });
+
+      console.log('Add table response:', response);
 
       if (response.success) {
         addNotification('Table added successfully', 'success');
@@ -114,8 +124,13 @@ const AdminMenu = () => {
           y_position: 0
         });
         loadTables();
+        refreshData(); // Refresh data in DataContext
+      } else {
+        console.error('Failed to add table:', response);
+        addNotification(response.message || 'Failed to add table', 'error');
       }
     } catch (error) {
+      console.error('Add table error:', error);
       addNotification(error.message || 'Failed to add table', 'error');
     }
   };
@@ -152,6 +167,7 @@ const AdminMenu = () => {
         addNotification(`${files.length} image(s) uploaded successfully`, 'success');
         setShowImageModal(false);
         loadTables();
+        refreshData(); // Refresh data in DataContext
       } else {
         addNotification(result.message || 'Failed to upload images', 'error');
       }
@@ -173,6 +189,9 @@ const AdminMenu = () => {
       if (response.success) {
         addNotification('Table deleted successfully', 'success');
         loadTables();
+        refreshData(); // Refresh data in DataContext
+      } else {
+        addNotification(response.message || 'Failed to delete table', 'error');
       }
     } catch (error) {
       addNotification(error.message || 'Failed to delete table', 'error');
@@ -190,6 +209,9 @@ const AdminMenu = () => {
       if (response.success) {
         addNotification('Image deleted successfully', 'success');
         loadTables();
+        refreshData(); // Refresh data in DataContext
+      } else {
+        addNotification(response.message || 'Failed to delete image', 'error');
       }
     } catch (error) {
       addNotification('Failed to delete image', 'error');
@@ -237,6 +259,9 @@ const AdminMenu = () => {
           chef_special: false
         });
         loadMenuItems();
+        refreshData(); // Refresh data in DataContext
+      } else {
+        addNotification(response.message || 'Failed to add menu item', 'error');
       }
     } catch (error) {
       addNotification(error.message || 'Failed to add menu item', 'error');
@@ -254,6 +279,9 @@ const AdminMenu = () => {
         addNotification('Menu item updated successfully', 'success');
         setEditingItem(null);
         loadMenuItems();
+        refreshData(); // Refresh data in DataContext
+      } else {
+        addNotification(response.message || 'Failed to update menu item', 'error');
       }
     } catch (error) {
       addNotification(error.message || 'Failed to update menu item', 'error');
@@ -271,6 +299,9 @@ const AdminMenu = () => {
       if (response.success) {
         addNotification('Menu item deleted successfully', 'success');
         loadMenuItems();
+        refreshData(); // Refresh data in DataContext
+      } else {
+        addNotification(response.message || 'Failed to delete menu item', 'error');
       }
     } catch (error) {
       addNotification(error.message || 'Failed to delete menu item', 'error');

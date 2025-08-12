@@ -55,7 +55,7 @@ router.get('/tables', async (req, res) => {
                 rt.id, rt.table_number, rt.capacity, rt.status, rt.type, 
                 rt.features, rt.x_position, rt.y_position, rt.created_at,
                 COUNT(ti.id) as image_count,
-                MIN(ti.image_path) as thumbnail_image
+                MIN(CASE WHEN ti.is_primary = 1 THEN ti.image_path END) as primary_image
             FROM restaurant_tables rt
             LEFT JOIN table_images ti ON rt.id = ti.table_id AND ti.is_active = 1
             WHERE rt.restaurant_id = ?
@@ -89,6 +89,15 @@ router.get('/tables', async (req, res) => {
         });
     }
 });
+
+// Lightweight endpoint to help clients check tables version (debug aid)
+let __tablesVersion = 0;
+router.get('/tables/version', async (req, res) => {
+    res.json({ success: true, version: __tablesVersion });
+});
+
+// Increment version helper
+function bumpTablesVersion() { __tablesVersion++; }
 
 // POST /api/admin/tables - Create new table
 router.post('/tables', [
@@ -131,6 +140,7 @@ router.post('/tables', [
         `, [restaurantId, table_number, capacity, type, features || null, x_position || 0, y_position || 0]);
 
         console.log(`✅ Table created: Table ${table_number} by Admin ${req.user.id}`);
+        bumpTablesVersion();
 
         res.status(201).json({
             success: true,
@@ -216,6 +226,7 @@ router.put('/tables/:id', [
         );
 
         console.log(`✅ Table updated: ID ${id} by Admin ${req.user.id}`);
+        bumpTablesVersion();
 
         res.status(200).json({
             success: true,
@@ -278,6 +289,7 @@ router.delete('/tables/:id', async (req, res) => {
         }
 
         console.log(`✅ Table deleted: ID ${id} by Admin ${req.user.id}`);
+        bumpTablesVersion();
 
         res.status(200).json({
             success: true,
@@ -349,6 +361,7 @@ router.post('/tables/:id/images', upload.array('images', 10), async (req, res) =
         }
 
         console.log(`✅ Table images uploaded: ${req.files.length} images for table ${id} by Admin ${req.user.id}`);
+        bumpTablesVersion();
 
         res.status(201).json({
             success: true,
@@ -425,6 +438,7 @@ router.delete('/tables/:tableId/images/:imageId', async (req, res) => {
         }
 
         console.log(`✅ Table image deleted: Image ${imageId} from table ${tableId} by Admin ${req.user.id}`);
+        bumpTablesVersion();
 
         res.status(200).json({
             success: true,

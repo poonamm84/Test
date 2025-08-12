@@ -76,7 +76,7 @@ const AdminMenu = () => {
 
   const loadTables = async () => {
     try {
-      const response = await apiCall('/admin/tables');
+      const response = await apiCall('/admin/tables?limit=all');
       if (response.success) {
         setTables(response.data);
       }
@@ -114,6 +114,7 @@ const AdminMenu = () => {
           y_position: 0
         });
         loadTables();
+        window.dispatchEvent(new Event('tablesUpdated'));
       }
     } catch (error) {
       addNotification(error.message || 'Failed to add table', 'error');
@@ -152,6 +153,7 @@ const AdminMenu = () => {
         addNotification(`${files.length} image(s) uploaded successfully`, 'success');
         setShowImageModal(false);
         loadTables();
+        window.dispatchEvent(new Event('tablesUpdated'));
       } else {
         addNotification(result.message || 'Failed to upload images', 'error');
       }
@@ -173,6 +175,7 @@ const AdminMenu = () => {
       if (response.success) {
         addNotification('Table deleted successfully', 'success');
         loadTables();
+        window.dispatchEvent(new Event('tablesUpdated'));
       }
     } catch (error) {
       addNotification(error.message || 'Failed to delete table', 'error');
@@ -190,6 +193,7 @@ const AdminMenu = () => {
       if (response.success) {
         addNotification('Image deleted successfully', 'success');
         loadTables();
+        window.dispatchEvent(new Event('tablesUpdated'));
       }
     } catch (error) {
       addNotification('Failed to delete image', 'error');
@@ -294,7 +298,7 @@ const AdminMenu = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center sticky top-0 z-10 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/75 py-3 px-1 -mx-1 border-b">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Menu Management</h1>
           <p className="text-gray-600">Manage your restaurant's menu items and pricing</p>

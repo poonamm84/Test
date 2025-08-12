@@ -31,6 +31,16 @@ const AdminOverview = () => {
 
   useEffect(() => {
     loadDashboardData();
+
+    const onTablesUpdated = () => {
+      // Refresh recent tables only
+      apiCall('/admin/tables?limit=3').then((tablesResponse) => {
+        if (tablesResponse.success) setRecentTables(tablesResponse.data);
+      }).catch(() => {});
+    };
+
+    window.addEventListener('tablesUpdated', onTablesUpdated);
+    return () => window.removeEventListener('tablesUpdated', onTablesUpdated);
   }, []);
 
   const loadDashboardData = async () => {

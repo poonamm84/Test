@@ -24,6 +24,12 @@ function App() {
   // Load tables from backend
   React.useEffect(() => {
     loadTables();
+
+    const onTablesUpdated = () => {
+      loadTables();
+    };
+    window.addEventListener('tablesUpdated', onTablesUpdated);
+    return () => window.removeEventListener('tablesUpdated', onTablesUpdated);
   }, []);
 
   const loadTables = async () => {
@@ -193,7 +199,7 @@ function App() {
           </div>
           
           <div className="flex overflow-x-auto gap-4 px-2 snap-x snap-mandatory scroll-smooth">
-            {tables.map((table) => {
+            {tables.slice(0, 3).map((table) => {
               const tableDisplay = getTableDisplayData(table);
               return (
               <div key={table.id} className="bg-white rounded-2xl shadow-lg border min-w-[280px] max-w-xs snap-center shrink-0 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 aspect-[3/4]">

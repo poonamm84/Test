@@ -48,7 +48,7 @@ router.use(authorizeRole(['admin']));
 router.get('/tables', async (req, res) => {
     try {
         const restaurantId = req.user.restaurant_id;
-        const { limit = 3 } = req.query; // Default to 3 for admin dashboard display
+        const { limit } = req.query;
 
         const tables = await db.all(`
             SELECT 
@@ -61,8 +61,8 @@ router.get('/tables', async (req, res) => {
             WHERE rt.restaurant_id = ?
             GROUP BY rt.id
             ORDER BY rt.created_at DESC
-            ${limit !== 'all' ? 'LIMIT ?' : ''}
-        `, limit !== 'all' ? [restaurantId, parseInt(limit)] : [restaurantId]);
+            ${limit ? 'LIMIT ?' : ''}
+        `, limit ? [restaurantId, parseInt(limit)] : [restaurantId]);
 
         // Get all images for each table
         for (const table of tables) {

@@ -61,7 +61,6 @@ const AdminMenu = () => {
   }, [menuItems, searchTerm, categoryFilter]);
 
   const loadMenuItems = async () => {
-    setIsLoading(true);
     try {
       const response = await apiCall('/admin/menu');
       if (response.success) {
@@ -69,19 +68,20 @@ const AdminMenu = () => {
       }
     } catch (error) {
       addNotification('Failed to load menu items', 'error');
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const loadTables = async () => {
+    setIsLoading(true);
     try {
       const response = await apiCall('/admin/tables');
       if (response.success) {
         setTables(response.data);
       }
     } catch (error) {
-      console.error('Failed to load tables:', error);
+      addNotification('Failed to load tables', 'error');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -120,7 +120,7 @@ const AdminMenu = () => {
     }
   };
 
-  const handleImageUpload = async (files, descriptions = []) => {
+  const handleImageUpload = async (files) => {
     if (!selectedTable || !files || files.length === 0) {
       addNotification('Please select images to upload', 'error');
       return;
@@ -133,10 +133,6 @@ const AdminMenu = () => {
       for (let i = 0; i < files.length; i++) {
         formData.append('images', files[i]);
       }
-      
-      descriptions.forEach((desc, index) => {
-        formData.append('descriptions', desc);
-      });
 
       const response = await fetch(`http://localhost:5000/api/admin/tables/${selectedTable.id}/images`, {
         method: 'POST',
@@ -292,7 +288,7 @@ const AdminMenu = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-8">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -320,27 +316,28 @@ const AdminMenu = () => {
       {/* Tables Section */}
       <div className="bg-white rounded-xl shadow-sm border p-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-semibold text-gray-900">Recent Tables (Showing 3 most recent)</h2>
+          <h2 className="text-lg font-semibold text-gray-900">Restaurant Tables</h2>
           <span className="text-sm text-gray-500">Total Tables: {tables.length}</span>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {tables.slice(0, 3).map((table) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {tables.map((table) => (
             <div key={table.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
               <div className="relative h-32 bg-gray-100">
-                {table.primary_image ? (
+                {table.images && table.images.length > 0 ? (
                   <img
-                    src={`http://localhost:5000${table.primary_image}`}
+                    src={`http://localhost:5000${table.images.find(img => img.is_primary)?.image_path || table.images[0]?.image_path}`}
                     alt={`Table ${table.table_number}`}
                     className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <Table className="w-8 h-8 text-gray-400" />
+                    <span className="ml-2 text-gray-500 text-sm">No image</span>
                   </div>
                 )}
                 <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
-                  {table.image_count} photos
+                  {table.images?.length || 0} photos
                 </div>
               </div>
               
@@ -371,6 +368,7 @@ const AdminMenu = () => {
                       setSelectedTable(table);
                       setShowImageModal(true);
                     }}
+                    disabled={uploadingImages}
                     className="flex-1 bg-blue-50 text-blue-600 py-2 px-3 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium flex items-center justify-center space-x-1"
                   >
                     <ImageIcon className="w-4 h-4" />
@@ -416,9 +414,10 @@ const AdminMenu = () => {
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            {categories.map(category => (
+            <option value="all">All Categories</option>
+            {menuItems.length > 0 && [...new Set(menuItems.map(item => item.category))].map(category => (
               <option key={category} value={category}>
-                {category === 'all' ? 'All Categories' : category}
+                {category}
               </option>
             ))}
           </select>
@@ -822,6 +821,12 @@ const AdminMenu = () => {
                     />
                     <p className="text-xs text-gray-500 mt-1">You can select multiple images at once. First image will be the thumbnail.</p>
                   </div>
+                  {uploadingImages && (
+                    <div className="mt-2 flex items-center space-x-2">
+                      <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                      <span className="text-sm text-blue-600">Uploading images...</span>
+                    </div>
+                  )}
                 </div>
               </div>
 

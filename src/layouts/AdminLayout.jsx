@@ -12,9 +12,10 @@ import AdminSettings from '../pages/admin/AdminSettings';
 
 const AdminLayout = () => {
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50 overflow-hidden">
       <AdminSidebar />
-      <div className="flex-1 p-8">
+      <div className="flex-1 ml-64 overflow-y-auto">
+        <div className="p-8">
         <Routes>
           <Route path="/" element={<AdminOverview />} />
           <Route path="/bookings" element={<AdminBookings />} />
@@ -25,6 +26,7 @@ const AdminLayout = () => {
           <Route path="/notifications" element={<AdminNotifications />} />
           <Route path="/settings" element={<AdminSettings />} />
         </Routes>
+        </div>
       </div>
     </div>
   );

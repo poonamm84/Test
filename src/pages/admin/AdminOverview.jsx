@@ -42,9 +42,9 @@ const AdminOverview = () => {
       }
 
       // Load recent tables
-      const tablesResponse = await apiCall('/admin/tables?limit=3');
+      const tablesResponse = await apiCall('/admin/tables');
       if (tablesResponse.success) {
-        setRecentTables(tablesResponse.data);
+        setRecentTables(tablesResponse.data.slice(0, 6)); // Show up to 6 tables
       }
     } catch (error) {
       addNotification('Failed to load dashboard data', 'error');
@@ -213,27 +213,28 @@ const AdminOverview = () => {
           <div className="p-6 border-b border-gray-200">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold text-gray-900">Recent Tables</h3>
-              <span className="text-sm text-gray-500">Showing 3 most recent</span>
+              <span className="text-sm text-gray-500">Total: {recentTables.length}</span>
             </div>
           </div>
           <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {recentTables.map((table) => (
                 <div key={table.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
                   <div className="relative h-24 bg-gray-100">
-                    {table.primary_image ? (
+                    {table.images && table.images.length > 0 ? (
                       <img
-                        src={`http://localhost:5000${table.primary_image}`}
+                        src={`http://localhost:5000${table.images.find(img => img.is_primary)?.image_path || table.images[0]?.image_path}`}
                         alt={`Table ${table.table_number}`}
                         className="w-full h-full object-cover"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <Table className="w-6 h-6 text-gray-400" />
+                        <span className="ml-1 text-xs text-gray-500">No image</span>
                       </div>
                     )}
                     <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
-                      {table.image_count} photos
+                      {table.images?.length || 0} photos
                     </div>
                   </div>
                   

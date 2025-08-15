@@ -10,74 +10,7 @@ export const useData = () => {
   return context;
 };
 
-// Mock data for restaurants
-const mockRestaurants = [
-  {
-    id: 1,
-    name: "The Golden Spoon",
-    cuisine: "Fine Dining",
-    rating: 4.8,
-    image: "https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg",
-    address: "123 Gourmet Street, Downtown",
-    phone: "+1 (555) 123-4567",
-    description: "Exquisite fine dining experience with contemporary cuisine",
-    tables: Array.from({ length: 20 }, (_, i) => ({
-      id: i + 1,
-      number: i + 1,
-      capacity: [2, 4, 6, 8][Math.floor(Math.random() * 4)],
-      status: i < 12 ? 'available' : ['reserved', 'occupied', 'cleaning'][Math.floor(Math.random() * 3)],
-      x: (i % 5) * 18 + 10,
-      y: Math.floor(i / 5) * 20 + 10,
-      image: `https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop&crop=center`,
-      type: ['window', 'corner', 'center', 'private'][Math.floor(Math.random() * 4)],
-      features: ['WiFi', 'Power Outlet', 'Premium View', 'Quiet Zone']
-    }))
-  },
-  {
-    id: 2,
-    name: "Sakura Sushi",
-    cuisine: "Japanese",
-    rating: 4.6,
-    image: "https://images.pexels.com/photos/357756/pexels-photo-357756.jpeg",
-    address: "456 Zen Garden Ave, Midtown",
-    phone: "+1 (555) 234-5678",
-    description: "Authentic Japanese cuisine with fresh sushi and sashimi",
-    tables: Array.from({ length: 15 }, (_, i) => ({
-      id: i + 1,
-      number: i + 1,
-      capacity: [2, 4, 6][Math.floor(Math.random() * 3)],
-      status: i < 10 ? 'available' : ['reserved', 'occupied', 'cleaning'][Math.floor(Math.random() * 3)],
-      x: (i % 5) * 18 + 10,
-      y: Math.floor(i / 5) * 20 + 10,
-      image: `https://images.pexels.com/photos/941861/pexels-photo-941861.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop&crop=center`,
-      type: ['window', 'corner', 'center', 'private'][Math.floor(Math.random() * 4)],
-      features: ['WiFi', 'Sushi Bar View', 'Traditional Seating', 'Sake Pairing']
-    }))
-  },
-  {
-    id: 3,
-    name: "Mama's Italian",
-    cuisine: "Italian",
-    rating: 4.7,
-    image: "https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg",
-    address: "789 Pasta Lane, Little Italy",
-    phone: "+1 (555) 345-6789",
-    description: "Traditional Italian flavors in a cozy family atmosphere",
-    tables: Array.from({ length: 18 }, (_, i) => ({
-      id: i + 1,
-      number: i + 1,
-      capacity: [2, 4, 6, 8][Math.floor(Math.random() * 4)],
-      status: i < 14 ? 'available' : ['reserved', 'occupied', 'cleaning'][Math.floor(Math.random() * 3)],
-      x: (i % 6) * 15 + 8,
-      y: Math.floor(i / 6) * 18 + 8,
-      image: `https://images.pexels.com/photos/776538/pexels-photo-776538.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop&crop=center`,
-      type: ['window', 'corner', 'center', 'private'][Math.floor(Math.random() * 4)],
-      features: ['WiFi', 'Wine Cellar View', 'Family Friendly', 'Romantic Ambiance']
-    }))
-  }
-];
-
-// Mock menu data
+// Menu data
 const mockMenuItems = {
   1: [
     {
@@ -198,10 +131,32 @@ const mockMenuItems = {
 };
 
 export const DataProvider = ({ children }) => {
-  const [restaurants, setRestaurants] = useState(mockRestaurants);
+  const [restaurants, setRestaurants] = useState([]);
   const [orders, setOrders] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [cart, setCart] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Load restaurants from API
+  const loadRestaurants = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/restaurants');
+      const result = await response.json();
+      if (result.success) {
+        setRestaurants(result.data);
+      }
+    } catch (error) {
+      console.error('Failed to load restaurants:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load restaurants on mount
+  React.useEffect(() => {
+    loadRestaurants();
+  }, []);
   
   // Admin functionality
   const updateRestaurant = (restaurantId, updates) => {
@@ -258,6 +213,8 @@ export const DataProvider = ({ children }) => {
 
   const value = {
     restaurants,
+    isLoading,
+    loadRestaurants,
     orders,
     bookings,
     cart,

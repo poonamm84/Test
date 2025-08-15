@@ -8,10 +8,16 @@ import NotificationToast from '../components/NotificationToast';
 
 const CustomerDashboard = () => {
   const { user, logout } = useAuth();
-  const { restaurants } = useData();
+  const { restaurants, isLoading: restaurantsLoading, loadRestaurants } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCuisine, setSelectedCuisine] = useState('all');
   const [favorites, setFavorites] = useState([]);
+
+  // Refresh restaurants data periodically
+  React.useEffect(() => {
+    const interval = setInterval(loadRestaurants, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
+  }, [loadRestaurants]);
 
   const cuisines = ['all', 'Fine Dining', 'Japanese', 'Italian', 'Indian', 'Mexican'];
 
@@ -168,7 +174,7 @@ const CustomerDashboard = () => {
                     </div>
                     <div className="flex items-center space-x-1">
                       <Users className="w-3 h-3 md:w-4 md:h-4" />
-                      <span>{restaurant.tables.filter(t => t.status === 'available').length} tables</span>
+                      <span>{restaurant.available_tables || 0} available</span>
                     </div>
                   </div>
                   
@@ -192,11 +198,18 @@ const CustomerDashboard = () => {
             ))}
           </div>
           
-          {filteredRestaurants.length === 0 && (
+          {!restaurantsLoading && filteredRestaurants.length === 0 && (
             <div className="text-center py-8 md:py-12">
               <div className="text-6xl mb-4">🔍</div>
               <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">No restaurants found</h3>
               <p className="text-gray-600 text-sm md:text-base">Try adjusting your search criteria or filters</p>
+            </div>
+          )}
+          
+          {restaurantsLoading && (
+            <div className="text-center py-8 md:py-12">
+              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading restaurants...</p>
             </div>
           )}
         </div>

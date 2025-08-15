@@ -141,7 +141,7 @@ router.get('/:id/tables', async (req, res) => {
                 rt.id, rt.table_number, rt.capacity, rt.status, rt.type, 
                 rt.features, rt.x_position, rt.y_position,
                 COUNT(ti.id) as image_count,
-                MIN(CASE WHEN ti.is_primary = 1 THEN ti.image_path END) as primary_image
+                GROUP_CONCAT(ti.image_path) as image_paths
             FROM restaurant_tables rt
             LEFT JOIN table_images ti ON rt.id = ti.table_id AND ti.is_active = 1
             WHERE rt.restaurant_id = ?
@@ -159,6 +159,7 @@ router.get('/:id/tables', async (req, res) => {
             `, [table.id]);
             table.images = images;
         }
+        
         res.status(200).json({
             success: true,
             message: 'Tables retrieved successfully',

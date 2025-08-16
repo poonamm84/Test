@@ -275,29 +275,6 @@ async function setupDatabase() {
         });
         userStmt.finalize();
 
-        // Insert sample tables for each restaurant
-        const tableStmt = db.prepare(`
-            INSERT OR IGNORE INTO restaurant_tables 
-            (restaurant_id, table_number, capacity, status, type, features, image, x_position, y_position) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `);
-
-        for (let restaurantId = 1; restaurantId <= 3; restaurantId++) {
-            const tableCount = restaurantId === 1 ? 20 : (restaurantId === 2 ? 15 : 18);
-            for (let i = 1; i <= tableCount; i++) {
-                const capacity = [2, 4, 6, 8][i % 4];
-                const status = i <= tableCount * 0.6 ? 'available' : ['reserved', 'occupied', 'cleaning'][i % 3];
-                const x = (i % 5) * 18 + 10;
-                const y = Math.floor(i / 5) * 20 + 10;
-                const type = ['window', 'corner', 'center', 'private'][i % 4];
-                const features = 'WiFi,Power Outlet,Premium View,Quiet Zone';
-                const image = 'https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg?auto=compress&cs=tinysrgb&w=300&h=200&fit=crop&crop=center';
-                
-                tableStmt.run([restaurantId, i, capacity, status, type, features, image, x, y]);
-            }
-        }
-        tableStmt.finalize();
-
         // Insert sample menu items
         const menuItems = [
             // The Golden Spoon

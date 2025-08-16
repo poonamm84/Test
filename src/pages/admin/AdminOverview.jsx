@@ -44,10 +44,11 @@ const AdminOverview = () => {
       // Load recent tables
       const tablesResponse = await apiCall('/admin/tables');
       if (tablesResponse.success) {
-        setRecentTables(tablesResponse.data.slice(0, 6)); // Show up to 6 tables
+        setRecentTables([]); // Start with empty tables
       }
     } catch (error) {
       addNotification('Failed to load dashboard data', 'error');
+      setRecentTables([]);
     } finally {
       setIsLoading(false);
     }
@@ -205,56 +206,7 @@ const AdminOverview = () => {
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-
-        {/* Recent Tables */}
-        <div className="bg-white rounded-xl shadow-sm border">
-          <div className="p-6 border-b border-gray-200">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold text-gray-900">Recent Tables</h3>
-              <span className="text-sm text-gray-500">Total: {recentTables.length}</span>
-            </div>
-          </div>
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {recentTables.map((table) => (
-                <div key={table.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                  <div className="relative h-24 bg-gray-100">
-                    {table.images && table.images.length > 0 ? (
-                      <img
-                        src={`http://localhost:5000${table.images.find(img => img.is_primary)?.image_path || table.images[0]?.image_path}`}
-                        alt={`Table ${table.table_number}`}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Table className="w-6 h-6 text-gray-400" />
-                        <span className="ml-1 text-xs text-gray-500">No image</span>
-                      </div>
-                    )}
-                    <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
-                      {table.images?.length || 0} photos
-                    </div>
-                  </div>
-                  
-                  <div className="p-3">
-                    <div className="flex justify-between items-center mb-1">
-                      <h4 className="font-semibold text-gray-900">Table {table.table_number}</h4>
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        table.status === 'available' ? 'bg-green-100 text-green-800' :
-                        table.status === 'reserved' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {table.status}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600">{table.capacity} seats • {table.type}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
+            {/* Show if no tables exist */}
             {recentTables.length === 0 && (
               <div className="text-center py-8">
                 <Table className="w-12 h-12 text-gray-400 mx-auto mb-4" />

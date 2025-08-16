@@ -193,72 +193,14 @@ function App() {
           </div>
           
           <div className="flex overflow-x-auto gap-4 px-2 snap-x snap-mandatory scroll-smooth">
-            {tables.map((table) => {
-              const tableDisplay = getTableDisplayData(table);
-              return (
-              <div key={table.id} className="bg-white rounded-2xl shadow-lg border min-w-[280px] max-w-xs snap-center shrink-0 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 aspect-[3/4]">
-                <div className="relative">
-                  <div className="h-40 overflow-hidden rounded-t-2xl">
-                    <img
-                      src={tableDisplay.image}
-                      alt={tableDisplay.name}
-                      className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                    />
-                  </div>
-                  
-                  <div className="absolute top-3 right-3">
-                    <div className="bg-black/70 backdrop-blur-sm text-white px-3 py-1 rounded-full text-xs font-medium">
-                      {tableDisplay.capacity} seats
-                    </div>
-                  </div>
-
-                  <div className="absolute top-3 left-3">
-                    <div className="bg-amber-500/90 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs font-medium">
-                      {tableDisplay.gallery.length} photos
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="p-4 flex flex-col justify-between h-[calc(100%-10rem)]">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h4 className="text-base font-bold text-gray-900 mb-1">{tableDisplay.name}</h4>
-                      <p className="text-gray-600 text-xs leading-relaxed">{tableDisplay.description}</p>
-                    </div>
-                    <div className="text-right ml-2">
-                      <div className="text-sm font-bold text-green-600">{tableDisplay.minSpend}</div>
-                      <div className="text-xs text-gray-500">min spend</div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {tableDisplay.features.map((feature, index) => (
-                      <span key={index} className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full font-medium">
-                        {feature}
-                      </span>
-                    ))}
-                  </div>
-                  
-                  <button
-                    onClick={() => handleTableSelect(tableDisplay)}
-                    className="w-full bg-gradient-to-r from-amber-600 to-orange-600 text-white py-2.5 px-4 rounded-xl hover:from-amber-700 hover:to-orange-700 transition-all duration-300 shadow-lg hover:shadow-xl font-semibold flex items-center justify-center space-x-2 text-sm transform hover:scale-105 active:scale-95"
-                  >
-                    <Eye className="w-4 h-4" />
-                    <span>View This Table</span>
-                  </button>
-                </div>
-              </div>
-            );
-            })}
+            {/* Tables will be displayed here when added by admin */}
           </div>
           
-          {tables.length === 0 && (
-            <div className="text-center py-12">
-              <Eye className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No tables available</h3>
-              <p className="text-gray-500">Please check back later or contact the restaurant.</p>
-            </div>
-          )}
+          <div className="text-center py-12">
+            <Eye className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No tables available</h3>
+            <p className="text-gray-500">Tables will appear here when the restaurant admin adds them.</p>
+          </div>
         </div>
       </div>
     );

@@ -44,7 +44,7 @@ const AdminOverview = () => {
       // Load recent tables
       const tablesResponse = await apiCall('/admin/tables');
       if (tablesResponse.success) {
-        setRecentTables([]); // Start with empty tables
+        setRecentTables(tablesResponse.data.slice(0, 5)); // Show last 5 tables
       }
     } catch (error) {
       addNotification('Failed to load dashboard data', 'error');
@@ -184,29 +184,37 @@ const AdminOverview = () => {
         {/* Recent Bookings */}
         <div className="bg-white rounded-xl shadow-sm border">
           <div className="p-6 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Today's Bookings</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Recent Tables</h3>
           </div>
           <div className="p-6">
             <div className="space-y-4">
-              {dashboardData.recentBookings?.slice(0, 5).map((booking) => (
-                <div key={booking.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              {recentTables.map((table) => (
+                <div key={table.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                      <Calendar className="w-5 h-5 text-purple-600" />
+                      <Table className="w-5 h-5 text-purple-600" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">{booking.customer_name}</p>
-                      <p className="text-sm text-gray-600">Table {booking.table_number}</p>
+                      <p className="font-medium text-gray-900">Table {table.table_number}</p>
+                      <p className="text-sm text-gray-600">{table.type} • {table.capacity} guests</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-gray-900">{booking.time}</p>
-                    <p className="text-sm text-gray-600">{booking.guests} guests</p>
+                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                      table.status === 'available' ? 'bg-green-100 text-green-800' :
+                      table.status === 'reserved' ? 'bg-yellow-100 text-yellow-800' :
+                      table.status === 'occupied' ? 'bg-red-100 text-red-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {table.status}
+                    </span>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {table.image_count || 0} photos
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
-            {/* Show if no tables exist */}
             {recentTables.length === 0 && (
               <div className="text-center py-8">
                 <Table className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -222,15 +230,24 @@ const AdminOverview = () => {
       <div className="bg-white rounded-xl shadow-sm border p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
+          <button 
+            onClick={() => window.location.href = '/admin/orders'}
+            className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
+          >
             <ShoppingBag className="w-8 h-8 text-gray-400 mx-auto mb-2" />
             <p className="text-sm font-medium text-gray-700">View All Orders</p>
           </button>
-          <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors">
+          <button 
+            onClick={() => window.location.href = '/admin/bookings'}
+            className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors"
+          >
             <Calendar className="w-8 h-8 text-gray-400 mx-auto mb-2" />
             <p className="text-sm font-medium text-gray-700">Manage Bookings</p>
           </button>
-          <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors">
+          <button 
+            onClick={() => window.location.href = '/admin/menu'}
+            className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors"
+          >
             <Table className="w-8 h-8 text-gray-400 mx-auto mb-2" />
             <p className="text-sm font-medium text-gray-700">Add New Table</p>
           </button>

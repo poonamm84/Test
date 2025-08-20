@@ -156,6 +156,10 @@ export const DataProvider = ({ children }) => {
   // Load restaurants on mount
   React.useEffect(() => {
     loadRestaurants();
+    
+    // Set up periodic refresh to keep data in sync
+    const interval = setInterval(loadRestaurants, 60000); // Refresh every minute
+    return () => clearInterval(interval);
   }, []); // Empty dependency array ensures this only runs once on mount
   
   // Admin functionality

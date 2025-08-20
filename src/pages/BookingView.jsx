@@ -50,7 +50,8 @@ function App() {
       group: "Large Group Table",
       private: "Private Dining",
       outdoor: "Outdoor Seating",
-      bar: "Bar Seating"
+      bar: "Bar Seating",
+      standard: "Standard Table"
     };
 
     const minSpends = {
@@ -59,7 +60,8 @@ function App() {
       group: "$60",
       private: "$80",
       outdoor: "$30",
-      bar: "$20"
+      bar: "$20",
+      standard: "$30"
     };
 
     const descriptions = {
@@ -68,13 +70,15 @@ function App() {
       group: "Large table perfect for group celebrations",
       private: "Exclusive private dining experience",
       outdoor: "Fresh air dining with garden views",
-      bar: "Casual seating at our premium bar"
+      bar: "Casual seating at our premium bar",
+      standard: "Comfortable seating for your dining experience"
     };
 
     const features = table.features ? table.features.split(',').map(f => f.trim()) : [];
     const gallery = table.images?.map(img => `http://localhost:5000${img.image_path}`) || [];
-    const primaryImage = table.primary_image ? `http://localhost:5000${table.primary_image}` : 
-                        (gallery[0] || "https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg");
+    const primaryImage = gallery.find((_, index) => table.images?.[index]?.is_primary) || 
+                        gallery[0] || 
+                        "https://images.pexels.com/photos/67468/pexels-photo-67468.jpeg";
 
     return {
       id: table.id,
@@ -87,7 +91,8 @@ function App() {
       features: features.length > 0 ? features : ["Comfortable seating", "Great ambiance"],
       availableSlots: ["18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"],
       gallery: gallery,
-      table_number: table.table_number
+      table_number: table.table_number,
+      status: table.status
     };
   };
 
@@ -141,20 +146,42 @@ function App() {
       return;
     }
     
-    alert(`Table booked successfully!\n\nTable: ${selectedTable.name}\nDate: ${bookingData.date}\nTime: ${bookingData.time}\nGuests: ${bookingData.guests}`);
 
 
-    
-    // Reset form
-    setShowTableCards(true);
-    setShowImageView(false);
-    setSelectedTable(null);
-    setCurrentImageIndex(0);
-    setBookingData({
-      date: '',
-      time: '',
-      guests: 2,
-      specialRequests: ''
+    // Make actual booking API call
+    apiCall('/bookings', {
+      method: 'POST',
+      body: {
+        restaurantId: parseInt(id),
+        tableId: selectedTable.id,
+        date: bookingData.date,
+        time: bookingData.time,
+        guests: bookingData.guests,
+        specialRequests: bookingData.specialRequests
+      }
+    })
+    .then(response => {
+      if (response.success) {
+        alert(`Table booked successfully!\n\nTable: ${selectedTable.name}\nDate: ${bookingData.date}\nTime: ${bookingData.time}\nGuests: ${bookingData.guests}`);
+        
+        // Reset form and navigate back
+        setShowTableCards(true);
+        setShowImageView(false);
+        setSelectedTable(null);
+        setCurrentImageIndex(0);
+        setBookingData({
+          date: '',
+          time: '',
+          guests: 2,
+          specialRequests: ''
+        });
+        
+        // Refresh tables to update status
+        loadTables();
+      }
+    })
+    .catch(error => {
+      alert('Booking failed: ' + error.message);
     });
   };
 
@@ -192,15 +219,76 @@ function App() {
             <p className="text-gray-600 text-sm">Choose from our carefully curated seating options</p>
           </div>
           
-          <div className="flex overflow-x-auto gap-4 px-2 snap-x snap-mandatory scroll-smooth">
-            {/* Tables will be displayed here when added by admin */}
-          </div>
-          
-          <div className="text-center py-12">
-            <Eye className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No tables available</h3>
-            <p className="text-gray-500">Tables will appear here when the restaurant admin adds them.</p>
-          </div>
+          {isLoadingPhotos ? (
+            <div className="text-center py-12">
+              <div className="w-8 h-8 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading tables...</p>
+            </div>
+          ) : tables.length === 0 ? (
+            <div className="text-center py-12">
+              <Eye className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No tables available</h3>
+              <p className="text-gray-500">Tables will appear here when the restaurant admin adds them.</p>
+            </div>
+          ) : (
+            <div className="flex overflow-x-auto gap-4 px-2 snap-x snap-mandatory scroll-smooth">
+              {tables.filter(table => table.status === 'available').map((table) => {
+                const displayTable = getTableDisplayData(table);
+                return (
+                  <div 
+                    key={table.id} 
+                    className="flex-none w-72 bg-white rounded-2xl shadow-lg border overflow-hidden snap-center cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                    onClick={() => handleTableSelect(displayTable)}
+                  >
+                    <div className="relative h-48">
+                      <img
+                        src={displayTable.image}
+                        alt={displayTable.name}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                      <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full">
+                        <span className="text-xs font-semibold text-green-600">{displayTable.minSpend}</span>
+                      </div>
+                      <div className="absolute bottom-3 left-3 text-white">
+                        <h3 className="text-lg font-bold drop-shadow-lg">{displayTable.name}</h3>
+                        <p className="text-sm opacity-90 drop-shadow-md">Table #{displayTable.table_number}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="p-4">
+                      <p className="text-gray-600 text-sm mb-3 line-clamp-2">{displayTable.description}</p>
+                      
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center space-x-1 text-sm text-gray-600">
+                          <Users className="w-4 h-4" />
+                          <span>Up to {displayTable.capacity} guests</span>
+                        </div>
+                        <span className="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded-full font-medium">
+                          Available
+                        </span>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-1 mb-4">
+                        {displayTable.features.slice(0, 2).map((feature, index) => (
+                          <span key={index} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
+                            {feature}
+                          </span>
+                        ))}
+                        {displayTable.features.length > 2 && (
+                          <span className="text-xs text-gray-500">+{displayTable.features.length - 2} more</span>
+                        )}
+                      </div>
+                      
+                      <button className="w-full bg-gradient-to-r from-amber-600 to-orange-600 text-white py-2 px-4 rounded-lg hover:from-amber-700 hover:to-orange-700 transition-all duration-300 font-medium">
+                        Select Table
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     );

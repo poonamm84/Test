@@ -17,7 +17,7 @@ const CustomerDashboard = () => {
   React.useEffect(() => {
     const interval = setInterval(loadRestaurants, 30000); // Refresh every 30 seconds
     return () => clearInterval(interval);
-  }, [loadRestaurants]);
+  }, []); // Remove loadRestaurants from dependencies to prevent infinite loop
 
   const cuisines = ['all', 'Fine Dining', 'Japanese', 'Italian', 'Indian', 'Mexican'];
 

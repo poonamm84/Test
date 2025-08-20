@@ -156,7 +156,7 @@ export const DataProvider = ({ children }) => {
   // Load restaurants on mount
   React.useEffect(() => {
     loadRestaurants();
-  }, []);
+  }, []); // Empty dependency array ensures this only runs once on mount
   
   // Admin functionality
   const updateRestaurant = (restaurantId, updates) => {

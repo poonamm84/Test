@@ -24,7 +24,7 @@ function App() {
   // Load tables from backend
   React.useEffect(() => {
     loadTables();
-  }, []);
+  }, [id]); // Only re-run when restaurant ID changes
 
   const loadTables = async () => {
     setIsLoadingPhotos(true);

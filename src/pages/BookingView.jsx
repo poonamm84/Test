@@ -150,14 +150,14 @@ function App() {
     // Make actual booking API call
     const result = await apiCall('/bookings', {
       method: 'POST',
-      body: {
+      body: JSON.stringify({
         restaurantId: parseInt(id),
         tableId: selectedTable.id,
         date: bookingData.date,
         time: bookingData.time,
         guests: bookingData.guests,
         specialRequests: bookingData.specialRequests
-      }
+      })
     });
 
     if (result.success) {

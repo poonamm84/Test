@@ -31,10 +31,10 @@ const AdminLogin = () => {
     fetch('http://localhost:5000/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: {
+      body: JSON.stringify({
         identifier: formData.adminId,
         password: formData.password
-      }
+      })
     }).then(res => res.json())
     .then(response => {
       if (response.success) {

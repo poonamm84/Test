@@ -92,14 +92,14 @@ const PaymentView = () => {
 
       const result = await apiCall('/orders', {
         method: 'POST',
-        body: {
+        body: JSON.stringify({
           restaurantId: orderData.restaurant.id,
           orderType: orderData.orderDetails.orderType,
           items: orderItems,
           totalAmount: orderData.pricing.total,
           scheduledTime: orderData.orderDetails.scheduledTime,
           specialInstructions: orderData.orderDetails.specialInstructions
-        }
+        })
       });
 
       if (result.success) {

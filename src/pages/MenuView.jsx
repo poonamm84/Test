@@ -1,42 +1,71 @@
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
+import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import { ArrowLeft, Plus, Minus, ShoppingCart, Star, Leaf, Heart, Filter } from 'lucide-react';
 
 const MenuView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { restaurants, loadMenuItems, addToCart, cart } = useData();
+  const { restaurants, addToCart, cart } = useData();
+  const { apiCall } = useAuth();
   const { addNotification } = useNotification();
   
-  const restaurant = restaurants.find(r => r.id === parseInt(id));
   const [menuItems, setMenuItems] = useState([]);
   const [isLoadingMenu, setIsLoadingMenu] = useState(true);
+  const [restaurant, setRestaurant] = useState(null);
   
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedDietary, setSelectedDietary] = useState('all');
   const [itemQuantities, setItemQuantities] = useState({});
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (id) {
+      loadRestaurant();
       loadMenu();
     }
   }, [id]);
 
+  const loadRestaurant = async () => {
+    try {
+      const result = await apiCall(`/restaurants/${id}`);
+      if (result.success) {
+        setRestaurant(result.data);
+      }
+    } catch (error) {
+      console.error('Failed to load restaurant:', error);
+      // Fallback to local data
+      const localRestaurant = restaurants.find(r => r.id === parseInt(id));
+      setRestaurant(localRestaurant);
+    }
+  };
+
   const loadMenu = async () => {
     setIsLoadingMenu(true);
     try {
-      const items = await loadMenuItems(parseInt(id));
-      setMenuItems(items);
+      const result = await apiCall(`/restaurants/${id}/menu`);
+      if (result.success) {
+        setMenuItems(result.data);
+      }
     } catch (error) {
+      console.error('Failed to load menu:', error);
       addNotification('Failed to load menu', 'error');
+      setMenuItems([]);
     } finally {
       setIsLoadingMenu(false);
     }
   };
+
   if (!restaurant) {
-    return <div>Restaurant not found</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading restaurant...</p>
+        </div>
+      </div>
+    );
   }
 
   const categories = ['all', ...new Set(menuItems.map(item => item.category))];
@@ -190,17 +219,17 @@ const MenuView = () => {
                 
                 {item.dietary && (
                   <div className="absolute bottom-4 left-4 flex space-x-2">
-                    {item.dietary.includes('vegetarian') && (
+                    {item.dietary.split(',').map(diet => diet.trim()).includes('vegetarian') && (
                       <div className="bg-green-500 text-white p-1 rounded-full" title="Vegetarian">
                         <Leaf className="w-3 h-3" />
                       </div>
                     )}
-                    {item.dietary.includes('gluten-free') && (
+                    {item.dietary.split(',').map(diet => diet.trim()).includes('gluten-free') && (
                       <div className="bg-blue-500 text-white p-1 rounded-full text-xs font-bold" title="Gluten Free">
                         GF
                       </div>
                     )}
-                    {item.dietary.includes('healthy') && (
+                    {item.dietary.split(',').map(diet => diet.trim()).includes('healthy') && (
                       <div className="bg-pink-500 text-white p-1 rounded-full" title="Healthy">
                         <Heart className="w-3 h-3" />
                       </div>
@@ -248,11 +277,16 @@ const MenuView = () => {
         </div>
         )}
         
-        {filteredItems.length === 0 && (
+        {!isLoadingMenu && filteredItems.length === 0 && (
           <div className="text-center py-8 md:py-12">
             <div className="text-6xl mb-4">🍽️</div>
             <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">No items found</h3>
-            <p className="text-gray-600 text-sm md:text-base">Try adjusting your category or dietary filters</p>
+            <p className="text-gray-600 text-sm md:text-base">
+              {menuItems.length === 0 
+                ? 'No menu items available yet. The restaurant admin needs to add menu items.'
+                : 'Try adjusting your category or dietary filters'
+              }
+            </p>
           </div>
         )}
       </div>

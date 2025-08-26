@@ -73,16 +73,16 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
       
       if (!response.ok) {
+        // Don't logout on 404 or other non-auth errors
+        if (response.status === 401 || response.status === 403) {
+          logout();
+        }
         throw new Error(data.message || `API request failed: ${response.status}`);
       }
       
       return data;
     } catch (error) {
       console.error('API call error:', error);
-      if (error.message.includes('401') || error.message.includes('403')) {
-        // Token expired or invalid, logout user
-        logout();
-      }
       throw error;
     }
   };

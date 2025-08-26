@@ -213,6 +213,11 @@ const AdminMenu = () => {
 
   const handleAddItem = async (e) => {
     e.preventDefault();
+    if (!newItem.name || !newItem.category || !newItem.price) {
+      addNotification('Please fill in all required fields', 'error');
+      return;
+    }
+
     try {
       const response = await apiCall('/admin/menu', {
         method: 'POST',
@@ -280,6 +285,11 @@ const AdminMenu = () => {
   };
 
   const categories = ['all', ...new Set(menuItems.map(item => item.category))];
+
+  const cuisineTypes = [
+    'Italian', 'Japanese', 'Chinese', 'Mexican', 'Indian', 'Thai', 'French', 
+    'Mediterranean', 'American', 'Korean', 'Vietnamese', 'Greek', 'Spanish'
+  ];
 
   if (isLoading) {
     return (
@@ -534,14 +544,32 @@ const AdminMenu = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
-                <input
-                  type="text"
-                  placeholder="Category"
+                <select
                   value={newItem.category}
                   onChange={(e) => setNewItem({...newItem, category: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
-                />
+                >
+                  <option value="">Select Category</option>
+                  <option value="Starters">Starters</option>
+                  <option value="Mains">Mains</option>
+                  <option value="Desserts">Desserts</option>
+                  <option value="Beverages">Beverages</option>
+                  <option value="Pizza">Pizza</option>
+                  <option value="Pasta">Pasta</option>
+                  <option value="Sushi">Sushi</option>
+                  <option value="Sashimi">Sashimi</option>
+                </select>
+                <select
+                  value={newItem.cuisine || ''}
+                  onChange={(e) => setNewItem({...newItem, cuisine: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select Cuisine Type</option>
+                  {cuisineTypes.map(cuisine => (
+                    <option key={cuisine} value={cuisine}>{cuisine}</option>
+                  ))}
+                </select>
                 <input
                   type="number"
                   step="0.01"
@@ -558,13 +586,42 @@ const AdminMenu = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   rows={3}
                 />
-                <input
-                  type="url"
-                  placeholder="Image URL"
-                  value={newItem.image}
-                  onChange={(e) => setNewItem({...newItem, image: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Item Image</label>
+                  <div className="space-y-3">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (e) => {
+                            setNewItem({...newItem, image: e.target.result});
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <input
+                      type="url"
+                      placeholder="Or enter image URL"
+                      value={newItem.image}
+                      onChange={(e) => setNewItem({...newItem, image: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {newItem.image && (
+                      <div className="mt-2">
+                        <img
+                          src={newItem.image}
+                          alt="Preview"
+                          className="w-20 h-20 object-cover rounded-lg border"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
                 <input
                   type="text"
                   placeholder="Dietary Info (comma separated)"
@@ -621,14 +678,32 @@ const AdminMenu = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
-                <input
-                  type="text"
-                  placeholder="Category"
+                <select
                   value={editingItem.category}
                   onChange={(e) => setEditingItem({...editingItem, category: e.target.value})}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
-                />
+                >
+                  <option value="">Select Category</option>
+                  <option value="Starters">Starters</option>
+                  <option value="Mains">Mains</option>
+                  <option value="Desserts">Desserts</option>
+                  <option value="Beverages">Beverages</option>
+                  <option value="Pizza">Pizza</option>
+                  <option value="Pasta">Pasta</option>
+                  <option value="Sushi">Sushi</option>
+                  <option value="Sashimi">Sashimi</option>
+                </select>
+                <select
+                  value={editingItem.cuisine || ''}
+                  onChange={(e) => setEditingItem({...editingItem, cuisine: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select Cuisine Type</option>
+                  {cuisineTypes.map(cuisine => (
+                    <option key={cuisine} value={cuisine}>{cuisine}</option>
+                  ))}
+                </select>
                 <input
                   type="number"
                   step="0.01"
@@ -645,13 +720,42 @@ const AdminMenu = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   rows={3}
                 />
-                <input
-                  type="url"
-                  placeholder="Image URL"
-                  value={editingItem.image}
-                  onChange={(e) => setEditingItem({...editingItem, image: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Item Image</label>
+                  <div className="space-y-3">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (e) => {
+                            setEditingItem({...editingItem, image: e.target.result});
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <input
+                      type="url"
+                      placeholder="Or enter image URL"
+                      value={editingItem.image}
+                      onChange={(e) => setEditingItem({...editingItem, image: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {editingItem.image && (
+                      <div className="mt-2">
+                        <img
+                          src={editingItem.image}
+                          alt="Preview"
+                          className="w-20 h-20 object-cover rounded-lg border"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
                 <input
                   type="text"
                   placeholder="Dietary Info (comma separated)"

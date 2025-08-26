@@ -170,18 +170,6 @@ export const DataProvider = ({ children }) => {
     ));
   };
 
-  const addMenuItem = (restaurantId, menuItem) => {
-    // Implementation for adding menu items
-  };
-
-  const updateMenuItem = (restaurantId, itemId, updates) => {
-    // Implementation for updating menu items
-  };
-
-  const deleteMenuItem = (restaurantId, itemId) => {
-    // Implementation for deleting menu items
-  };
-
   const addToCart = (item, restaurantId) => {
     setCart(prev => [...prev, { ...item, restaurantId, id: Date.now() }]);
   };
@@ -210,23 +198,6 @@ export const DataProvider = ({ children }) => {
       }
       return restaurant;
     }));
-  };
-
-  const getMenuItems = (restaurantId) => {
-    // This will be loaded from API when needed
-    return mockMenuItems[restaurantId] || [];
-  };
-
-  const loadMenuItems = async (restaurantId) => {
-    try {
-      const result = await apiCall(`/restaurants/${restaurantId}/menu`);
-      if (result.success) {
-        return result.data;
-      }
-    } catch (error) {
-      console.error('Failed to load menu items:', error);
-      return mockMenuItems[restaurantId] || [];
-    }
   };
 
   const loadUserOrders = async () => {
@@ -259,16 +230,11 @@ export const DataProvider = ({ children }) => {
     bookings,
     cart,
     updateRestaurant,
-    addMenuItem,
-    updateMenuItem,
-    deleteMenuItem,
     addToCart,
     removeFromCart,
     clearCart,
     addBooking,
     updateTableStatus,
-    getMenuItems,
-    loadMenuItems,
     loadUserOrders,
     loadUserBookings
   };

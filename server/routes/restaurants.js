@@ -97,7 +97,7 @@ router.get('/:id/menu', async (req, res) => {
         }
 
         const menuItems = await db.all(`
-            SELECT id, name, category, price, description, image, dietary, chef_special, available
+            SELECT id, name, category, cuisine, price, description, image, dietary, chef_special, available
             FROM menu_items 
             WHERE restaurant_id = ? AND available = 1
             ORDER BY category, name

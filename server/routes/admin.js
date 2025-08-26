@@ -601,7 +601,7 @@ router.get('/menu', async (req, res) => {
         const restaurantId = req.user.restaurant_id;
 
         const menuItems = await db.all(`
-            SELECT id, name, category, price, description, image, dietary, chef_special, available, created_at, updated_at
+            SELECT id, name, category, cuisine, price, description, image, dietary, chef_special, available, created_at, updated_at
             FROM menu_items 
             WHERE restaurant_id = ?
             ORDER BY category, name
@@ -626,9 +626,10 @@ router.get('/menu', async (req, res) => {
 router.post('/menu', [
     body('name').trim().isLength({ min: 1, max: 100 }).withMessage('Name is required and must be less than 100 characters'),
     body('category').trim().isLength({ min: 1, max: 50 }).withMessage('Category is required and must be less than 50 characters'),
+    body('cuisine').optional().trim().isLength({ max: 50 }).withMessage('Cuisine must be less than 50 characters'),
     body('price').isFloat({ min: 0 }).withMessage('Price must be a positive number'),
     body('description').optional().isLength({ max: 500 }).withMessage('Description must be less than 500 characters'),
-    body('image').optional().isURL().withMessage('Image must be a valid URL'),
+    body('image').optional().isString().withMessage('Image is optional'),
     body('dietary').optional().isLength({ max: 100 }).withMessage('Dietary info must be less than 100 characters'),
     body('chef_special').optional().isBoolean().withMessage('Chef special must be a boolean')
 ], async (req, res) => {
@@ -643,12 +644,12 @@ router.post('/menu', [
         }
 
         const restaurantId = req.user.restaurant_id;
-        const { name, category, price, description, image, dietary, chef_special } = req.body;
+        const { name, category, cuisine, price, description, image, dietary, chef_special } = req.body;
 
         const result = await db.run(`
-            INSERT INTO menu_items (restaurant_id, name, category, price, description, image, dietary, chef_special, available)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
-        `, [restaurantId, name, category, price, description || null, image || null, dietary || null, chef_special || false]);
+            INSERT INTO menu_items (restaurant_id, name, category, cuisine, price, description, image, dietary, chef_special, available)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+        `, [restaurantId, name, category, cuisine || null, price, description || null, image || null, dietary || null, chef_special || false]);
 
         console.log(`✅ Menu item created: ${name} by Admin ${req.user.id}`);
 
@@ -676,9 +677,10 @@ router.post('/menu', [
 router.put('/menu/:id', [
     body('name').optional().trim().isLength({ min: 1, max: 100 }).withMessage('Name must be less than 100 characters'),
     body('category').optional().trim().isLength({ min: 1, max: 50 }).withMessage('Category must be less than 50 characters'),
+    body('cuisine').optional().trim().isLength({ max: 50 }).withMessage('Cuisine must be less than 50 characters'),
     body('price').optional().isFloat({ min: 0 }).withMessage('Price must be a positive number'),
     body('description').optional().isLength({ max: 500 }).withMessage('Description must be less than 500 characters'),
-    body('image').optional().isURL().withMessage('Image must be a valid URL'),
+    body('image').optional().isString().withMessage('Image is optional'),
     body('dietary').optional().isLength({ max: 100 }).withMessage('Dietary info must be less than 100 characters'),
     body('chef_special').optional().isBoolean().withMessage('Chef special must be a boolean'),
     body('available').optional().isBoolean().withMessage('Available must be a boolean')
@@ -713,7 +715,7 @@ router.put('/menu/:id', [
         const updateFields = [];
         const updateValues = [];
 
-        const allowedFields = ['name', 'category', 'price', 'description', 'image', 'dietary', 'chef_special', 'available'];
+        const allowedFields = ['name', 'category', 'cuisine', 'price', 'description', 'image', 'dietary', 'chef_special', 'available'];
         
         for (const field of allowedFields) {
             if (req.body.hasOwnProperty(field)) {

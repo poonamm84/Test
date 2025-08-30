@@ -1,8 +1,25 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ChefHat, Calendar, Menu, Star, Users, MapPin, Phone } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const HomePage = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated, role } = useAuth();
+
+  // Redirect authenticated users to their appropriate dashboard
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      if (role === 'admin') {
+        navigate('/admin', { replace: true });
+      } else if (role === 'superadmin') {
+        navigate('/super-admin', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
+    }
+  }, [isAuthenticated, role, navigate]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Header */}

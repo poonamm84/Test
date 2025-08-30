@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Shield, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 
 const AdminLogin = () => {
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/admin';
   const [formData, setFormData] = useState({
     adminId: '',
     password: ''
@@ -13,9 +15,21 @@ const AdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
-  const { login, apiCall } = useAuth();
+  const { login, isAuthenticated, role } = useAuth();
   const { addNotification } = useNotification();
 
+  // Redirect if already authenticated
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      if (role === 'admin') {
+        navigate(from, { replace: true });
+      } else if (role === 'superadmin') {
+        navigate('/super-admin', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
+    }
+  }, [isAuthenticated, role, navigate, from]);
   const handleInputChange = (e) => {
     setFormData(prev => ({
       ...prev,
@@ -43,16 +57,20 @@ const AdminLogin = () => {
         addNotification('Admin login successful!', 'success');
         
         if (user.role === 'admin') {
-          navigate('/admin');
+          navigate(from, { replace: true });
         } else if (user.role === 'superadmin') {
-          navigate('/super-admin');
+          navigate('/super-admin', { replace: true });
         } else {
-          navigate('/dashboard');
+          navigate('/dashboard', { replace: true });
         }
       }
     })
     .catch(error => {
-      addNotification(error.message || 'Admin login failed', 'error');
+      if (error.message && (error.message.includes('fetch') || error.message.includes('Network'))) {
+        addNotification('Unable to connect to server. Please check your connection and try again.', 'error');
+      } else {
+        addNotification('Invalid admin credentials. Please check your Admin ID and password.', 'error');
+      }
     })
     .finally(() => {
       setIsLoading(false);

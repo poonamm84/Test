@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 
 const DataContext = createContext();
@@ -11,125 +11,6 @@ export const useData = () => {
   return context;
 };
 
-// Menu data
-const mockMenuItems = {
-  1: [
-    {
-      id: 1,
-      name: "Wagyu Beef Tenderloin",
-      category: "Mains",
-      price: 89.99,
-      description: "Premium wagyu beef with truffle sauce and seasonal vegetables",
-      image: "https://images.pexels.com/photos/361184/asparagus-steak-veal-steak-veal-361184.jpeg",
-      dietary: ["gluten-free"],
-      chef_special: true,
-      available: true
-    },
-    {
-      id: 2,
-      name: "Pan-Seared Salmon",
-      category: "Mains",
-      price: 32.99,
-      description: "Fresh Atlantic salmon with lemon herb butter and quinoa",
-      image: "https://images.pexels.com/photos/262959/pexels-photo-262959.jpeg",
-      dietary: ["gluten-free", "healthy"],
-      available: true
-    },
-    {
-      id: 3,
-      name: "Truffle Arancini",
-      category: "Starters",
-      price: 18.99,
-      description: "Crispy risotto balls with black truffle and parmesan",
-      image: "https://images.pexels.com/photos/4518843/pexels-photo-4518843.jpeg",
-      dietary: ["vegetarian"],
-      available: true
-    },
-    {
-      id: 4,
-      name: "Lobster Thermidor",
-      category: "Mains",
-      price: 65.99,
-      description: "Fresh lobster with creamy cognac sauce and herbs",
-      image: "https://images.pexels.com/photos/725991/pexels-photo-725991.jpeg",
-      dietary: ["gluten-free"],
-      available: true
-    },
-    {
-      id: 5,
-      name: "Chocolate Soufflé",
-      category: "Desserts",
-      price: 16.99,
-      description: "Warm chocolate soufflé with vanilla ice cream",
-      image: "https://images.pexels.com/photos/291528/pexels-photo-291528.jpeg",
-      dietary: ["vegetarian"],
-      available: true
-    }
-  ],
-  2: [
-    {
-      id: 6,
-      name: "Sashimi Platter",
-      category: "Sashimi",
-      price: 45.99,
-      description: "Fresh selection of tuna, salmon, and yellowtail",
-      image: "https://images.pexels.com/photos/357756/pexels-photo-357756.jpeg",
-      dietary: ["gluten-free", "healthy"],
-      available: true
-    },
-    {
-      id: 7,
-      name: "Dragon Roll",
-      category: "Sushi",
-      price: 18.99,
-      description: "Eel and cucumber topped with avocado and eel sauce",
-      image: "https://images.pexels.com/photos/2098085/pexels-photo-2098085.jpeg",
-      available: true
-    },
-    {
-      id: 8,
-      name: "Miso Soup",
-      category: "Starters",
-      price: 6.99,
-      description: "Traditional soybean paste soup with tofu and seaweed",
-      image: "https://images.pexels.com/photos/5409751/pexels-photo-5409751.jpeg",
-      dietary: ["vegetarian", "healthy"],
-      available: true
-    }
-  ],
-  3: [
-    {
-      id: 9,
-      name: "Margherita Pizza",
-      category: "Pizza",
-      price: 22.99,
-      description: "Fresh mozzarella, tomato sauce, and basil",
-      image: "https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg",
-      dietary: ["vegetarian"],
-      available: true
-    },
-    {
-      id: 10,
-      name: "Fettuccine Alfredo",
-      category: "Pasta",
-      price: 19.99,
-      description: "Creamy parmesan sauce with fresh fettuccine",
-      image: "https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg",
-      dietary: ["vegetarian"],
-      available: true
-    },
-    {
-      id: 11,
-      name: "Tiramisu",
-      category: "Desserts",
-      price: 12.99,
-      description: "Classic Italian dessert with coffee and mascarpone",
-      image: "https://images.pexels.com/photos/6880219/pexels-photo-6880219.jpeg",
-      dietary: ["vegetarian"],
-      available: true
-    }
-  ]
-};
 
 export const DataProvider = ({ children }) => {
   const [restaurants, setRestaurants] = useState([]);
@@ -137,31 +18,142 @@ export const DataProvider = ({ children }) => {
   const [bookings, setBookings] = useState([]);
   const [cart, setCart] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { apiCall } = useAuth();
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const { apiCall, isAuthenticated, authChecked, token } = useAuth();
 
+  // Load data from localStorage on mount
+  useEffect(() => {
+    const loadStoredData = () => {
+      try {
+        const storedRestaurants = localStorage.getItem('restaurants');
+        const storedOrders = localStorage.getItem('orders');
+        const storedBookings = localStorage.getItem('bookings');
+        const storedCart = localStorage.getItem('cart');
+        
+        if (storedRestaurants) {
+          setRestaurants(JSON.parse(storedRestaurants));
+        }
+        if (storedOrders) {
+          setOrders(JSON.parse(storedOrders));
+        }
+        if (storedBookings) {
+          setBookings(JSON.parse(storedBookings));
+        }
+        if (storedCart) {
+          setCart(JSON.parse(storedCart));
+        }
+        
+        console.log('📦 Data restored from localStorage');
+      } catch (error) {
+        console.error('Error loading stored data:', error);
+      }
+    };
+    
+    loadStoredData();
+  }, []);
+
+  // Save data to localStorage whenever it changes
+  useEffect(() => {
+    if (restaurants.length > 0) {
+      localStorage.setItem('restaurants', JSON.stringify(restaurants));
+    }
+  }, [restaurants]);
+
+  useEffect(() => {
+    if (orders.length > 0) {
+      localStorage.setItem('orders', JSON.stringify(orders));
+    }
+  }, [orders]);
+
+  useEffect(() => {
+    if (bookings.length > 0) {
+      localStorage.setItem('bookings', JSON.stringify(bookings));
+    }
+  }, [bookings]);
+
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
   // Load restaurants from API
   const loadRestaurants = async () => {
     setIsLoading(true);
     try {
       const result = await apiCall('/restaurants');
-      if (result.success) {
+      if (result && result.success) {
         setRestaurants(result.data);
+        setDataLoaded(true);
+        console.log('🏪 Restaurants loaded from API');
+      } else if (result && result.data) {
+        setRestaurants(result.data);
+        setDataLoaded(true);
       }
     } catch (error) {
-      console.error('Failed to load restaurants:', error);
+      console.warn('⚠️ Failed to load restaurants from API:', error.message);
+      // Don't clear existing data on network errors
+      if (restaurants.length === 0) {
+        // Set fallback data if no stored data exists
+        setRestaurants([
+          {
+            id: 1,
+            name: 'The Golden Spoon',
+            cuisine: 'Fine Dining',
+            rating: 4.8,
+            image: 'https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg',
+            address: '123 Gourmet Street, Downtown',
+            phone: '+1 (555) 123-4567',
+            description: 'Exquisite fine dining experience with contemporary cuisine',
+            tables: [],
+            total_tables: 20,
+            available_tables: 12
+          },
+          {
+            id: 2,
+            name: 'Sakura Sushi',
+            cuisine: 'Japanese',
+            rating: 4.6,
+            image: 'https://images.pexels.com/photos/357756/pexels-photo-357756.jpeg',
+            address: '456 Zen Garden Ave, Midtown',
+            phone: '+1 (555) 234-5678',
+            description: 'Authentic Japanese cuisine with fresh sushi and sashimi',
+            tables: [],
+            total_tables: 15,
+            available_tables: 8
+          },
+          {
+            id: 3,
+            name: "Mama's Italian",
+            cuisine: 'Italian',
+            rating: 4.7,
+            image: 'https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg',
+            address: '789 Pasta Lane, Little Italy',
+            phone: '+1 (555) 345-6789',
+            description: 'Traditional Italian flavors in a cozy family atmosphere',
+            tables: [],
+            total_tables: 18,
+            available_tables: 10
+          }
+        ]);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Load restaurants on mount
+  // Load restaurants when authentication is ready
   React.useEffect(() => {
-    loadRestaurants();
-    
-    // Set up periodic refresh to keep data in sync
-    const interval = setInterval(loadRestaurants, 60000); // Refresh every minute
-    return () => clearInterval(interval);
-  }, []); // Empty dependency array ensures this only runs once on mount
+    if (authChecked) {
+      loadRestaurants();
+      
+      // Set up periodic refresh only if authenticated
+      let interval;
+      if (isAuthenticated && token) {
+        interval = setInterval(() => {
+          loadRestaurants();
+        }, 60000); // Refresh every minute
+      }
+      return () => clearInterval(interval);
+    }
+  }, [authChecked, isAuthenticated, token]);
   
   // Admin functionality
   const updateRestaurant = (restaurantId, updates) => {
@@ -201,30 +193,37 @@ export const DataProvider = ({ children }) => {
   };
 
   const loadUserOrders = async () => {
+    if (!isAuthenticated || !token) return;
+    
     try {
       const result = await apiCall('/orders');
-      if (result.success) {
+      if (result && result.success) {
         setOrders(result.data);
+        console.log('📋 Orders loaded from API');
       }
     } catch (error) {
-      console.error('Failed to load orders:', error);
+      console.warn('⚠️ Failed to load orders:', error.message);
     }
   };
 
   const loadUserBookings = async () => {
+    if (!isAuthenticated || !token) return;
+    
     try {
       const result = await apiCall('/bookings');
-      if (result.success) {
+      if (result && result.success) {
         setBookings(result.data);
+        console.log('📅 Bookings loaded from API');
       }
     } catch (error) {
-      console.error('Failed to load bookings:', error);
+      console.warn('⚠️ Failed to load bookings:', error.message);
     }
   };
 
   const value = {
     restaurants,
     isLoading,
+    dataLoaded,
     loadRestaurants,
     orders,
     bookings,

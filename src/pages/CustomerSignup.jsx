@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ChefHat, ArrowLeft, Eye, EyeOff, User, Mail, Phone, Lock } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 
 const CustomerSignup = () => {
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/dashboard';
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -18,8 +21,21 @@ const CustomerSignup = () => {
   const [fieldErrors, setFieldErrors] = useState({});
 
   const navigate = useNavigate();
+  const { isAuthenticated, role } = useAuth();
   const { addNotification } = useNotification();
 
+  // Redirect if already authenticated
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      if (role === 'admin') {
+        navigate('/admin', { replace: true });
+      } else if (role === 'superadmin') {
+        navigate('/super-admin', { replace: true });
+      } else {
+        navigate(from, { replace: true });
+      }
+    }
+  }, [isAuthenticated, role, navigate, from]);
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -113,7 +129,11 @@ const CustomerSignup = () => {
       }
     } catch (error) {
       console.error('Signup error:', error);
-      addNotification('Network error. Please try again.', 'error');
+      if (error.message.includes('fetch') || error.message.includes('Network')) {
+        addNotification('Unable to connect to server. Please check your connection and try again.', 'error');
+      } else {
+        addNotification(error.message || 'Signup failed. Please try again.', 'error');
+      }
     } finally {
       setIsLoading(false);
     }

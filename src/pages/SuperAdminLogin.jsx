@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Crown, ArrowLeft, Eye, EyeOff, Shield, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 
 const SuperAdminLogin = () => {
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/super-admin';
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -14,9 +16,21 @@ const SuperAdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
-  const { login, apiCall } = useAuth();
+  const { login, isAuthenticated, role } = useAuth();
   const { addNotification } = useNotification();
 
+  // Redirect if already authenticated
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      if (role === 'superadmin') {
+        navigate(from, { replace: true });
+      } else if (role === 'admin') {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
+    }
+  }, [isAuthenticated, role, navigate, from]);
   const handleInputChange = (e) => {
     setFormData(prev => ({
       ...prev,
@@ -43,14 +57,18 @@ const SuperAdminLogin = () => {
         if (user.role === 'superadmin' && formData.securityCode === '777888') {
           login(user, user.role, response.data.token);
           addNotification('Super Admin access granted!', 'success');
-          navigate('/super-admin');
+          navigate(from, { replace: true });
         } else {
           addNotification('Invalid security code or insufficient privileges', 'error');
         }
       }
     })
     .catch(error => {
-      addNotification(error.message || 'Super admin login failed', 'error');
+      if (error.message && (error.message.includes('fetch') || error.message.includes('Network'))) {
+        addNotification('Unable to connect to server. Please check your connection and try again.', 'error');
+      } else {
+        addNotification('Invalid super admin credentials or security code. Please check your details.', 'error');
+      }
     })
     .finally(() => {
       setIsLoading(false);

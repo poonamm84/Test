@@ -19,16 +19,10 @@ const SuperAdminLogin = () => {
   const { login, isAuthenticated, role } = useAuth();
   const { addNotification } = useNotification();
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated as super admin to super admin dashboard
   React.useEffect(() => {
-    if (isAuthenticated) {
-      if (role === 'superadmin') {
-        navigate(from, { replace: true });
-      } else if (role === 'admin') {
-        navigate('/admin', { replace: true });
-      } else {
-        navigate('/dashboard', { replace: true });
-      }
+    if (isAuthenticated && role === 'superadmin') {
+      navigate(from, { replace: true });
     }
   }, [isAuthenticated, role, navigate, from]);
   const handleInputChange = (e) => {

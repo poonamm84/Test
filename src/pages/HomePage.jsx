@@ -7,9 +7,10 @@ const HomePage = () => {
   const navigate = useNavigate();
   const { isAuthenticated, role } = useAuth();
 
-  // Redirect authenticated users to their appropriate dashboard
+  // Only redirect if user is on homepage and authenticated
   React.useEffect(() => {
-    if (isAuthenticated) {
+    // Only redirect from homepage, not from other pages
+    if (isAuthenticated && window.location.pathname === '/') {
       if (role === 'admin') {
         navigate('/admin', { replace: true });
       } else if (role === 'superadmin') {

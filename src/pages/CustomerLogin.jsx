@@ -27,16 +27,10 @@ const CustomerLogin = () => {
   const { login, isAuthenticated, role } = useAuth();
   const { addNotification } = useNotification();
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated as customer to customer dashboard
   React.useEffect(() => {
-    if (isAuthenticated) {
-      if (role === 'admin') {
-        navigate('/admin', { replace: true });
-      } else if (role === 'superadmin') {
-        navigate('/super-admin', { replace: true });
-      } else {
-        navigate(from, { replace: true });
-      }
+    if (isAuthenticated && role === 'customer') {
+      navigate(from, { replace: true });
     }
   }, [isAuthenticated, role, navigate, from]);
   const countryCodes = [

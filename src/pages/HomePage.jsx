@@ -7,19 +7,6 @@ const HomePage = () => {
   const navigate = useNavigate();
   const { isAuthenticated, role } = useAuth();
 
-  // Only redirect if user is on homepage and authenticated
-  React.useEffect(() => {
-    // Only redirect from homepage, not from other pages
-    if (isAuthenticated && window.location.pathname === '/') {
-      if (role === 'admin') {
-        navigate('/admin', { replace: true });
-      } else if (role === 'superadmin') {
-        navigate('/super-admin', { replace: true });
-      } else {
-        navigate('/dashboard', { replace: true });
-      }
-    }
-  }, [isAuthenticated, role, navigate]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">

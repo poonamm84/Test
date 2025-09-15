@@ -28,10 +28,7 @@ const ProtectedRoute = ({ children, role }) => {
 
   // Check role authorization
   if (role && userRole !== role) {
-    // Redirect to appropriate dashboard based on user's actual role
-    if (userRole === 'admin') return <Navigate to="/admin" replace />;
-    if (userRole === 'superadmin') return <Navigate to="/super-admin" replace />;
-    if (userRole === 'customer') return <Navigate to="/dashboard" replace />;
+    // Unauthorized access - redirect to home page
     return <Navigate to="/" replace />;
   }
 

@@ -6,7 +6,7 @@ import { useNotification } from '../context/NotificationContext';
 
 const SuperAdminLogin = () => {
   const location = useLocation();
-  const from = location.state?.from?.pathname || '/super-admin';
+  const from = location.state?.from || { pathname: '/super-admin' };
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -22,7 +22,7 @@ const SuperAdminLogin = () => {
   // Redirect if already authenticated as super admin to super admin dashboard
   React.useEffect(() => {
     if (isAuthenticated && role === 'superadmin') {
-      navigate(from, { replace: true });
+      navigate(from.pathname || '/super-admin', { replace: true });
     }
   }, [isAuthenticated, role, navigate, from]);
   const handleInputChange = (e) => {
@@ -51,7 +51,7 @@ const SuperAdminLogin = () => {
         if (user.role === 'superadmin' && formData.securityCode === '777888') {
           login(user, user.role, response.data.token);
           addNotification('Super Admin access granted!', 'success');
-          navigate(from, { replace: true });
+          navigate(from.pathname || '/super-admin', { replace: true });
         } else {
           addNotification('Invalid security code or insufficient privileges', 'error');
         }

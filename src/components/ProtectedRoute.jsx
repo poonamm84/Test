@@ -1,9 +1,10 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const ProtectedRoute = ({ children, role }) => {
   const { isAuthenticated, role: userRole, authChecked } = useAuth();
+  const location = useLocation();
 
   // Show loading spinner only while checking authentication
   if (!authChecked) {
@@ -21,14 +22,28 @@ const ProtectedRoute = ({ children, role }) => {
 
   // Redirect to appropriate login page if not authenticated
   if (!isAuthenticated) {
-    if (role === 'admin') return <Navigate to="/admin-dashboard-secret-portal-2025" replace />;
-    if (role === 'superadmin') return <Navigate to="/super-admin-control" replace />;
-    return <Navigate to="/login" replace />;
+    if (role === 'admin') {
+      return <Navigate to="/admin-dashboard-secret-portal-2025" state={{ from: location }} replace />;
+    }
+    if (role === 'superadmin') {
+      return <Navigate to="/super-admin-control" state={{ from: location }} replace />;
+    }
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // Check role authorization
   if (role && userRole !== role) {
-    // Unauthorized access - redirect to home page
+    // Role mismatch - redirect to appropriate login page
+    if (role === 'admin') {
+      return <Navigate to="/admin-dashboard-secret-portal-2025" state={{ from: location }} replace />;
+    }
+    if (role === 'superadmin') {
+      return <Navigate to="/super-admin-control" state={{ from: location }} replace />;
+    }
+    if (role === 'customer') {
+      return <Navigate to="/login" state={{ from: location }} replace />;
+    }
+    // Fallback to home page for unknown roles
     return <Navigate to="/" replace />;
   }
 

@@ -21,7 +21,7 @@ import { useAuth } from './context/AuthContext';
 
 // App content component that uses auth context
 const AppContent = () => {
-  const { authChecked } = useAuth();
+  const { authChecked, isAuthenticated, role } = useAuth();
 
   // Show loading screen only while checking authentication
   if (!authChecked) {
@@ -102,7 +102,13 @@ const AppContent = () => {
             </ProtectedRoute>
           } />
           
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={
+            // Smart redirect based on current authentication
+            isAuthenticated && role === 'customer' ? <Navigate to="/dashboard" replace /> :
+            isAuthenticated && role === 'admin' ? <Navigate to="/admin" replace /> :
+            isAuthenticated && role === 'superadmin' ? <Navigate to="/super-admin" replace /> :
+            <Navigate to="/" replace />
+          } />
         </Routes>
       </div>
     </Router>

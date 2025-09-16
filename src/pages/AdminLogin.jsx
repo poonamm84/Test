@@ -6,7 +6,7 @@ import { useNotification } from '../context/NotificationContext';
 
 const AdminLogin = () => {
   const location = useLocation();
-  const from = location.state?.from?.pathname || '/admin';
+  const from = location.state?.from || { pathname: '/admin' };
   const [formData, setFormData] = useState({
     adminId: '',
     password: ''
@@ -21,7 +21,7 @@ const AdminLogin = () => {
   // Redirect if already authenticated as admin to admin dashboard
   React.useEffect(() => {
     if (isAuthenticated && role === 'admin') {
-      navigate(from, { replace: true });
+      navigate(from.pathname || '/admin', { replace: true });
     }
   }, [isAuthenticated, role, navigate, from]);
   const handleInputChange = (e) => {
@@ -51,7 +51,7 @@ const AdminLogin = () => {
         addNotification('Admin login successful!', 'success');
         
         if (user.role === 'admin') {
-          navigate(from, { replace: true });
+          navigate(from.pathname || '/admin', { replace: true });
         } else if (user.role === 'superadmin') {
           navigate('/super-admin', { replace: true });
         } else {

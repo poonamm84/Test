@@ -6,7 +6,7 @@ import { useNotification } from '../context/NotificationContext';
 
 const CustomerSignup = () => {
   const location = useLocation();
-  const from = location.state?.from?.pathname || '/dashboard';
+  const from = location.state?.from || { pathname: '/dashboard' };
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -27,7 +27,7 @@ const CustomerSignup = () => {
   // Redirect if already authenticated as customer to customer dashboard
   React.useEffect(() => {
     if (isAuthenticated && role === 'customer') {
-      navigate(from, { replace: true });
+      navigate(from.pathname || '/dashboard', { replace: true });
     }
   }, [isAuthenticated, role, navigate, from]);
   const handleInputChange = (e) => {

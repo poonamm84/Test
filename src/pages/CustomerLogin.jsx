@@ -6,7 +6,7 @@ import { useNotification } from '../context/NotificationContext';
 
 const CustomerLogin = () => {
   const location = useLocation();
-  const from = location.state?.from?.pathname || '/dashboard';
+  const from = location.state?.from || { pathname: '/dashboard' };
   const [loginMethod, setLoginMethod] = useState('email'); // 'email' or 'mobile'
   const [formData, setFormData] = useState({
     email: '',
@@ -30,7 +30,7 @@ const CustomerLogin = () => {
   // Redirect if already authenticated as customer to customer dashboard
   React.useEffect(() => {
     if (isAuthenticated && role === 'customer') {
-      navigate(from, { replace: true });
+      navigate(from.pathname || '/dashboard', { replace: true });
     }
   }, [isAuthenticated, role, navigate, from]);
   const countryCodes = [
@@ -143,7 +143,7 @@ const CustomerLogin = () => {
         } else if (user.role === 'superadmin') {
           navigate('/super-admin');
         } else {
-          navigate('/dashboard');
+          navigate(from.pathname || '/dashboard');
         }
       } else {
         setErrors({ password: 'Invalid email or password' });
@@ -187,7 +187,7 @@ const CustomerLogin = () => {
         const user = result.data.user;
         login(user, user.role, result.data.token);
         addNotification('Login successful!', 'success');
-        navigate(from, { replace: true });
+        navigate(from.pathname || '/dashboard', { replace: true });
       } else {
         setErrors({ otp: result.message || 'Invalid OTP' });
       }

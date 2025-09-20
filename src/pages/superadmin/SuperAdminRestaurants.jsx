@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useSuperAdminAuth } from '../../context/SuperAdminAuthContext';
 import { useNotification } from '../../context/NotificationContext';
 import { 
   Building, 
@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 const SuperAdminRestaurants = () => {
-  const { apiCall } = useAuth();
+  const { apiCall } = useSuperAdminAuth();
   const { addNotification } = useNotification();
   
   const [restaurants, setRestaurants] = useState([]);

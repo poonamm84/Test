@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useData } from '../context/DataContext';
+import { useCustomerData } from '../context/CustomerDataContext';
 import { Star, MapPin, Phone, Clock, ArrowLeft, Calendar, Menu } from 'lucide-react';
 
 const RestaurantView = () => {
   const { id } = useParams();
-  const { restaurants } = useData();
+  const { restaurants } = useCustomerData();
   const restaurant = restaurants.find(r => r.id === parseInt(id));
 
   if (!restaurant) {

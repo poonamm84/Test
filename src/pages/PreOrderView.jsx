@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useData } from '../context/DataContext';
-import { useAuth } from '../context/AuthContext';
+import { useCustomerData } from '../context/CustomerDataContext';
+import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { useNotification } from '../context/NotificationContext';
 import { ArrowLeft, Trash2, Plus, Minus, ShoppingCart, Calendar, Clock } from 'lucide-react';
 
 const PreOrderView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { restaurants, cart, removeFromCart, clearCart } = useData();
-  const { apiCall } = useAuth();
+  const { restaurants, cart, removeFromCart, clearCart } = useCustomerData();
+  const { apiCall } = useCustomerAuth();
   const { addNotification } = useNotification();
   
   const restaurant = restaurants.find(r => r.id === parseInt(id));

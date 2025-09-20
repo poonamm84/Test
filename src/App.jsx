@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { CustomerAuthProvider } from './context/CustomerAuthContext';
+import { AdminAuthProvider } from './context/AdminAuthContext';
+import { SuperAdminAuthProvider } from './context/SuperAdminAuthContext';
+import { CustomerDataProvider } from './context/CustomerDataContext';
 import HomePage from './pages/HomePage';
 import CustomerLogin from './pages/CustomerLogin';
 import CustomerSignup from './pages/CustomerSignup';
@@ -13,117 +17,134 @@ import MenuView from './pages/MenuView';
 import BookingView from './pages/BookingView';
 import PreOrderView from './pages/PreOrderView';
 import PaymentView from './pages/PaymentView';
-import { AuthProvider } from './context/AuthContext';
-import { DataProvider } from './context/DataContext';
 import { NotificationProvider } from './context/NotificationContext';
-import ProtectedRoute from './components/ProtectedRoute';
-import { useAuth } from './context/AuthContext';
+import CustomerProtectedRoute from './components/CustomerProtectedRoute';
+import AdminProtectedRoute from './components/AdminProtectedRoute';
+import SuperAdminProtectedRoute from './components/SuperAdminProtectedRoute';
 
-// App content component that uses auth context
-const AppContent = () => {
-  const { authChecked, isAuthenticated, role } = useAuth();
-
-  // Show loading screen only while checking authentication
-  if (!authChecked) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="relative">
-            <div className="w-20 h-20 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-6"></div>
-            <div className="absolute inset-0 w-20 h-20 border-4 border-purple-500/20 border-b-purple-500 rounded-full animate-spin mx-auto" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
-          </div>
-          <h2 className="text-white text-2xl font-bold mb-2">RestaurantAI Platform</h2>
-          <p className="text-blue-200 animate-pulse">
-            Checking authentication...
-          </p>
-          <div className="mt-4 w-64 h-1 bg-gray-700 rounded-full mx-auto overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse" style={{ width: '100%', animation: 'loading 2s ease-in-out' }}></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+// Customer App Section
+const CustomerApp = () => {
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-50">
+    <CustomerAuthProvider>
+      <CustomerDataProvider>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<CustomerLogin />} />
           <Route path="/signup" element={<CustomerSignup />} />
-          <Route path="/admin-dashboard-secret-portal-2025" element={<AdminLogin />} />
-          <Route path="/super-admin-control" element={<SuperAdminLogin />} />
           
           <Route path="/dashboard" element={
-            <ProtectedRoute role="customer">
+            <CustomerProtectedRoute>
               <CustomerDashboard />
-            </ProtectedRoute>
+            </CustomerProtectedRoute>
           } />
           
           <Route path="/restaurant/:id" element={
-            <ProtectedRoute role="customer">
+            <CustomerProtectedRoute>
               <RestaurantView />
-            </ProtectedRoute>
+            </CustomerProtectedRoute>
           } />
           
           <Route path="/restaurant/:id/menu" element={
-            <ProtectedRoute role="customer">
+            <CustomerProtectedRoute>
               <MenuView />
-            </ProtectedRoute>
+            </CustomerProtectedRoute>
           } />
           
           <Route path="/restaurant/:id/booking" element={
-            <ProtectedRoute role="customer">
+            <CustomerProtectedRoute>
               <BookingView />
-            </ProtectedRoute>
+            </CustomerProtectedRoute>
           } />
           
           <Route path="/restaurant/:id/preorder" element={
-            <ProtectedRoute role="customer">
+            <CustomerProtectedRoute>
               <PreOrderView />
-            </ProtectedRoute>
+            </CustomerProtectedRoute>
           } />
           
           <Route path="/payment" element={
-            <ProtectedRoute role="customer">
+            <CustomerProtectedRoute>
               <PaymentView />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/admin/*" element={
-            <ProtectedRoute role="admin">
-              <AdminLayout />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="/super-admin/*" element={
-            <ProtectedRoute role="superadmin">
-              <SuperAdminLayout />
-            </ProtectedRoute>
-          } />
-          
-          <Route path="*" element={
-            // Smart redirect based on current authentication
-            isAuthenticated && role === 'customer' ? <Navigate to="/dashboard" replace /> :
-            isAuthenticated && role === 'admin' ? <Navigate to="/admin" replace /> :
-            isAuthenticated && role === 'superadmin' ? <Navigate to="/super-admin" replace /> :
-            <Navigate to="/" replace />
+            </CustomerProtectedRoute>
           } />
         </Routes>
-      </div>
-    </Router>
+      </CustomerDataProvider>
+    </CustomerAuthProvider>
+  );
+};
+
+// Admin App Section
+const AdminApp = () => {
+  return (
+    <AdminAuthProvider>
+      <Routes>
+        <Route path="/admin-dashboard-secret-portal-2025" element={<AdminLogin />} />
+        <Route path="/admin/*" element={
+          <AdminProtectedRoute>
+            <AdminLayout />
+          </AdminProtectedRoute>
+        } />
+      </Routes>
+    </AdminAuthProvider>
+  );
+};
+
+// Super Admin App Section
+const SuperAdminApp = () => {
+  return (
+    <SuperAdminAuthProvider>
+      <Routes>
+        <Route path="/super-admin-control" element={<SuperAdminLogin />} />
+        <Route path="/super-admin/*" element={
+          <SuperAdminProtectedRoute>
+            <SuperAdminLayout />
+          </SuperAdminProtectedRoute>
+        } />
+      </Routes>
+    </SuperAdminAuthProvider>
   );
 };
 
 function App() {
   return (
-    <AuthProvider>
-      <DataProvider>
-        <NotificationProvider>
-          <AppContent />
-        </NotificationProvider>
-      </DataProvider>
-    </AuthProvider>
+    <NotificationProvider>
+      <Router>
+        <div className="min-h-screen bg-gray-50">
+          <Routes>
+            {/* Customer Routes */}
+            <Route path="/*" element={<CustomerApp />} />
+            
+            {/* Admin Routes */}
+            <Route path="/admin-dashboard-secret-portal-2025" element={
+              <AdminAuthProvider>
+                <AdminLogin />
+              </AdminAuthProvider>
+            } />
+            <Route path="/admin/*" element={
+              <AdminAuthProvider>
+                <AdminProtectedRoute>
+                  <AdminLayout />
+                </AdminProtectedRoute>
+              </AdminAuthProvider>
+            } />
+            
+            {/* Super Admin Routes */}
+            <Route path="/super-admin-control" element={
+              <SuperAdminAuthProvider>
+                <SuperAdminLogin />
+              </SuperAdminAuthProvider>
+            } />
+            <Route path="/super-admin/*" element={
+              <SuperAdminAuthProvider>
+                <SuperAdminProtectedRoute>
+                  <SuperAdminLayout />
+                </SuperAdminProtectedRoute>
+              </SuperAdminAuthProvider>
+            } />
+          </Routes>
+        </div>
+      </Router>
+    </NotificationProvider>
   );
 }
 

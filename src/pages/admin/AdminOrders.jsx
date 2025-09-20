@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAdminAuth } from '../../context/AdminAuthContext';
 import { useNotification } from '../../context/NotificationContext';
 import { 
   ShoppingBag, 
@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 const AdminOrders = () => {
-  const { apiCall } = useAuth();
+  const { apiCall } = useAdminAuth();
   const { addNotification } = useNotification();
   
   const [orders, setOrders] = useState([]);

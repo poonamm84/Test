@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAdminAuth } from '../../context/AdminAuthContext';
 import { useNotification } from '../../context/NotificationContext';
 import { Users, Search, Mail, Phone, Calendar, Eye, Edit, Trash2 } from 'lucide-react';
 
 const AdminCustomers = () => {
-  const { apiCall } = useAuth();
+  const { apiCall } = useAdminAuth();
   const { addNotification } = useNotification();
   
   const [customers, setCustomers] = useState([]);

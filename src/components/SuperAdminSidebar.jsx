@@ -11,11 +11,11 @@ import {
   Settings,
   LogOut
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useSuperAdminAuth } from '../context/SuperAdminAuthContext';
 
 const SuperAdminSidebar = () => {
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user, logout } = useSuperAdminAuth();
 
   const menuItems = [
     { id: 'overview', label: 'Platform Overview', icon: LayoutDashboard, path: '/super-admin' },

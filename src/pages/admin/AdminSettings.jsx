@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAdminAuth } from '../../context/AdminAuthContext';
 import { useNotification } from '../../context/NotificationContext';
 import { 
   Settings, 
@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 const AdminSettings = () => {
-  const { apiCall, user } = useAuth();
+  const { apiCall, user } = useAdminAuth();
   const { addNotification } = useNotification();
   
   const [restaurantData, setRestaurantData] = useState({

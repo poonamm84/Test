@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useData } from '../context/DataContext';
-import { useAuth } from '../context/AuthContext';
+import { useCustomerData } from '../context/CustomerDataContext';
+import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { useNotification } from '../context/NotificationContext';
 import { CreditCard, Lock, CheckCircle, ArrowLeft } from 'lucide-react';
 
 const PaymentView = () => {
   const navigate = useNavigate();
-  const { clearCart } = useData();
-  const { apiCall } = useAuth();
+  const { clearCart } = useCustomerData();
+  const { apiCall } = useCustomerAuth();
   const { addNotification } = useNotification();
   
   const [orderData, setOrderData] = useState(null);

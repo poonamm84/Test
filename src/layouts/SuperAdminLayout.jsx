@@ -13,7 +13,7 @@ const SuperAdminLayout = () => {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <SuperAdminSidebar />
-      <div className="flex-1 p-8">
+      <div className="flex-1 ml-64 p-8">
         <Routes>
           <Route path="/" element={<SuperAdminOverview />} />
           <Route path="/restaurants" element={<SuperAdminRestaurants />} />

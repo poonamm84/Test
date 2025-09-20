@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Shield, ArrowLeft, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAdminAuth } from '../context/AdminAuthContext';
 import { useNotification } from '../context/NotificationContext';
 
 const AdminLogin = () => {
@@ -15,15 +15,15 @@ const AdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
-  const { login, isAuthenticated, role } = useAuth();
+  const { login, isAuthenticated } = useAdminAuth();
   const { addNotification } = useNotification();
 
-  // Redirect if already authenticated as admin to admin dashboard
+  // Redirect if already authenticated as admin
   React.useEffect(() => {
-    if (isAuthenticated && role === 'admin') {
+    if (isAuthenticated) {
       navigate(from.pathname || '/admin', { replace: true });
     }
-  }, [isAuthenticated, role, navigate, from]);
+  }, [isAuthenticated, navigate, from]);
   const handleInputChange = (e) => {
     setFormData(prev => ({
       ...prev,
@@ -47,15 +47,12 @@ const AdminLogin = () => {
     .then(response => {
       if (response.success) {
         const user = response.data.user;
-        login(user, user.role, response.data.token);
+        login(user, response.data.token);
         addNotification('Admin login successful!', 'success');
         
+        // Only handle admin navigation
         if (user.role === 'admin') {
           navigate(from.pathname || '/admin', { replace: true });
-        } else if (user.role === 'superadmin') {
-          navigate('/super-admin', { replace: true });
-        } else {
-          navigate('/dashboard', { replace: true });
         }
       }
     })

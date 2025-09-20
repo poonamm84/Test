@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAdminAuth } from '../../context/AdminAuthContext';
 import { useNotification } from '../../context/NotificationContext';
 import { 
   ChefHat, 
@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 const AdminMenu = () => {
-  const { apiCall } = useAuth();
+  const { apiCall } = useAdminAuth();
   const { addNotification } = useNotification();
   
   const [menuItems, setMenuItems] = useState([]);
@@ -139,7 +139,7 @@ const AdminMenu = () => {
       const response = await fetch(`http://localhost:5000/api/admin/tables/${selectedTable.id}/images`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
         },
         body: formData
       });

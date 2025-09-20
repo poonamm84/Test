@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, Clock, Users, ArrowLeft, Check, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useCustomerAuth } from '../context/CustomerAuthContext';
 
 
 function App() {
@@ -13,7 +13,7 @@ function App() {
   const [isLoadingPhotos, setIsLoadingPhotos] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams();
-  const { apiCall } = useAuth();
+  const { apiCall } = useCustomerAuth();
   const [bookingData, setBookingData] = useState({
     date: '',
     time: '',

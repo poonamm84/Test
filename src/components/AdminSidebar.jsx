@@ -11,11 +11,11 @@ import {
   Settings,
   LogOut
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAdminAuth } from '../context/AdminAuthContext';
 
 const AdminSidebar = () => {
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user, logout } = useAdminAuth();
 
   const menuItems = [
     { id: 'overview', label: 'Dashboard Overview', icon: LayoutDashboard, path: '/admin' },

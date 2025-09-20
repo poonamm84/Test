@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useSuperAdminAuth } from '../../context/SuperAdminAuthContext';
 import { useNotification } from '../../context/NotificationContext';
 import { 
   Settings, 
@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 const SuperAdminSettings = () => {
-  const { apiCall, user } = useAuth();
+  const { apiCall, user } = useSuperAdminAuth();
   const { addNotification } = useNotification();
   
   const [platformSettings, setPlatformSettings] = useState({
@@ -484,4 +484,4 @@ const SuperAdminSettings = () => {
   );
 };
 
-export default SuperAdminSettings;
+export default SuperAdminSettings;   

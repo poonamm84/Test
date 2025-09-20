@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Crown, ArrowLeft, Eye, EyeOff, Shield, Zap } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useSuperAdminAuth } from '../context/SuperAdminAuthContext';
 import { useNotification } from '../context/NotificationContext';
 
 const SuperAdminLogin = () => {
@@ -16,15 +16,15 @@ const SuperAdminLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
-  const { login, isAuthenticated, role } = useAuth();
+  const { login, isAuthenticated } = useSuperAdminAuth();
   const { addNotification } = useNotification();
 
-  // Redirect if already authenticated as super admin to super admin dashboard
+  // Redirect if already authenticated as super admin
   React.useEffect(() => {
-    if (isAuthenticated && role === 'superadmin') {
+    if (isAuthenticated) {
       navigate(from.pathname || '/super-admin', { replace: true });
     }
-  }, [isAuthenticated, role, navigate, from]);
+  }, [isAuthenticated, navigate, from]);
   const handleInputChange = (e) => {
     setFormData(prev => ({
       ...prev,
@@ -49,7 +49,7 @@ const SuperAdminLogin = () => {
       if (response.success) {
         const user = response.data.user;
         if (user.role === 'superadmin' && formData.securityCode === '777888') {
-          login(user, user.role, response.data.token);
+          login(user, response.data.token);
           addNotification('Super Admin access granted!', 'success');
           navigate(from.pathname || '/super-admin', { replace: true });
         } else {

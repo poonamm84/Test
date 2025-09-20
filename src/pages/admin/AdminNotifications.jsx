@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAdminAuth } from '../../context/AdminAuthContext';
 import { useNotification } from '../../context/NotificationContext';
 import { Bell, AlertCircle, CheckCircle, Info, Clock, Trash2, BookMarked as MarkAsRead } from 'lucide-react';
 
 const AdminNotifications = () => {
-  const { apiCall } = useAuth();
+  const { apiCall } = useAdminAuth();
   const { addNotification } = useNotification();
   
   const [notifications, setNotifications] = useState([]);

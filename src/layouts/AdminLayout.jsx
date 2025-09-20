@@ -16,16 +16,16 @@ const AdminLayout = () => {
       <AdminSidebar />
       <div className="flex-1 ml-64 overflow-y-auto">
         <div className="p-8">
-        <Routes>
-          <Route path="/" element={<AdminOverview />} />
-          <Route path="/bookings" element={<AdminBookings />} />
-          <Route path="/orders" element={<AdminOrders />} />
-          <Route path="/customers" element={<AdminCustomers />} />
-          <Route path="/analytics" element={<AdminAnalytics />} />
-          <Route path="/menu" element={<AdminMenu />} />
-          <Route path="/notifications" element={<AdminNotifications />} />
-          <Route path="/settings" element={<AdminSettings />} />
-        </Routes>
+          <Routes>
+            <Route path="/" element={<AdminOverview />} />
+            <Route path="/bookings" element={<AdminBookings />} />
+            <Route path="/orders" element={<AdminOrders />} />
+            <Route path="/customers" element={<AdminCustomers />} />
+            <Route path="/analytics" element={<AdminAnalytics />} />
+            <Route path="/menu" element={<AdminMenu />} />
+            <Route path="/notifications" element={<AdminNotifications />} />
+            <Route path="/settings" element={<AdminSettings />} />
+          </Routes>
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ChefHat, ArrowLeft, Eye, EyeOff, User, Mail, Phone, Lock } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { useNotification } from '../context/NotificationContext';
 
 const CustomerSignup = () => {
@@ -21,15 +21,15 @@ const CustomerSignup = () => {
   const [fieldErrors, setFieldErrors] = useState({});
 
   const navigate = useNavigate();
-  const { isAuthenticated, role } = useAuth();
+  const { isAuthenticated } = useCustomerAuth();
   const { addNotification } = useNotification();
 
-  // Redirect if already authenticated as customer to customer dashboard
+  // Redirect if already authenticated as customer
   React.useEffect(() => {
-    if (isAuthenticated && role === 'customer') {
+    if (isAuthenticated) {
       navigate(from.pathname || '/dashboard', { replace: true });
     }
-  }, [isAuthenticated, role, navigate, from]);
+  }, [isAuthenticated, navigate, from]);
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({

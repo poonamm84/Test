@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useSuperAdminAuth } from '../../context/SuperAdminAuthContext';
 import { useNotification } from '../../context/NotificationContext';
 import { 
   BarChart3, 
@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 const SuperAdminAnalytics = () => {
-  const { apiCall } = useAuth();
+  const { apiCall } = useSuperAdminAuth();
   const { addNotification } = useNotification();
   
   const [analyticsData, setAnalyticsData] = useState({

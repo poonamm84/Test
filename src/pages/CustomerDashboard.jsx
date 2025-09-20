@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { useData } from '../context/DataContext';
+import { useCustomerAuth } from '../context/CustomerAuthContext';
+import { useCustomerData } from '../context/CustomerDataContext';
 import { Star, MapPin, Clock, Users, ChefHat, Search, Filter, Heart, Calendar } from 'lucide-react';
 import AIChat from '../components/AIChat';
 import NotificationToast from '../components/NotificationToast';
 
 const CustomerDashboard = () => {
-  const { user, logout } = useAuth();
-  const { restaurants, isLoading: restaurantsLoading, loadRestaurants, loadUserOrders, loadUserBookings } = useData();
+  const { user, logout } = useCustomerAuth();
+  const { restaurants, isLoading: restaurantsLoading, loadRestaurants, loadUserOrders, loadUserBookings } = useCustomerData();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCuisine, setSelectedCuisine] = useState('all');
   const [favorites, setFavorites] = useState([]);

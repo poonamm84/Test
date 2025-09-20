@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ChefHat, Phone, ArrowLeft, Eye, EyeOff, Send, Mail, Lock } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { useNotification } from '../context/NotificationContext';
 
 const CustomerLogin = () => {
@@ -24,15 +24,15 @@ const CustomerLogin = () => {
   const [errors, setErrors] = useState({});
 
   const navigate = useNavigate();
-  const { login, isAuthenticated, role } = useAuth();
+  const { login, isAuthenticated } = useCustomerAuth();
   const { addNotification } = useNotification();
 
-  // Redirect if already authenticated as customer to customer dashboard
+  // Redirect if already authenticated as customer
   React.useEffect(() => {
-    if (isAuthenticated && role === 'customer') {
+    if (isAuthenticated) {
       navigate(from.pathname || '/dashboard', { replace: true });
     }
-  }, [isAuthenticated, role, navigate, from]);
+  }, [isAuthenticated, navigate, from]);
   const countryCodes = [
     { code: '+1', country: 'US/CA', flag: '🇺🇸' },
     { code: '+44', country: 'UK', flag: '🇬🇧' },
@@ -134,17 +134,11 @@ const CustomerLogin = () => {
 
       if (result.success) {
         const user = result.data.user;
-        login(user, user.role, result.data.token);
+        login(user, result.data.token);
         addNotification('Login successful!', 'success');
         
-        // Navigate based on role
-        if (user.role === 'admin') {
-          navigate('/admin');
-        } else if (user.role === 'superadmin') {
-          navigate('/super-admin');
-        } else {
-          navigate(from.pathname || '/dashboard');
-        }
+        // Only handle customer navigation
+        navigate(from.pathname || '/dashboard');
       } else {
         setErrors({ password: 'Invalid email or password' });
       }
@@ -185,7 +179,7 @@ const CustomerLogin = () => {
 
       if (result.success) {
         const user = result.data.user;
-        login(user, user.role, result.data.token);
+        login(user, result.data.token);
         addNotification('Login successful!', 'success');
         navigate(from.pathname || '/dashboard', { replace: true });
       } else {

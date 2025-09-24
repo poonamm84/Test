@@ -64,7 +64,6 @@ const PreOrderView = () => {
       return;
     }
 
-    // Create order via API
     const orderData = {
       restaurant,
       items: groupedItemsArray,

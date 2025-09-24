@@ -30,8 +30,11 @@ const MenuView = () => {
   const loadRestaurant = async () => {
     try {
       const result = await apiCall(`/restaurants/${id}`);
-      if (result.success) {
+      if (result && result.success) {
         setRestaurant(result.data);
+      } else if (result && result.id) {
+        // Handle direct restaurant object response
+        setRestaurant(result);
       }
     } catch (error) {
       console.error('Failed to load restaurant:', error);
@@ -45,8 +48,11 @@ const MenuView = () => {
     setIsLoadingMenu(true);
     try {
       const result = await apiCall(`/restaurants/${id}/menu`);
-      if (result.success) {
+      if (result && result.success) {
         setMenuItems(result.data);
+      } else if (Array.isArray(result)) {
+        // Handle direct array response
+        setMenuItems(result);
       }
     } catch (error) {
       console.error('Failed to load menu:', error);

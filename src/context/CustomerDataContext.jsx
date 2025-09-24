@@ -78,13 +78,19 @@ export const CustomerDataProvider = ({ children }) => {
   const loadRestaurants = async () => {
     setIsLoading(true);
     try {
-      const result = await apiCall('/restaurants');
+      const response = await fetch('http://localhost:5000/api/restaurants');
+      const result = await response.json();
       if (result && result.success) {
         setRestaurants(result.data);
         setDataLoaded(true);
         console.log('🏪 Customer restaurants loaded from API');
-      } else if (result && result.data) {
+      } else if (result && Array.isArray(result)) {
+        // Handle direct array response from backend
         setRestaurants(result.data);
+        setDataLoaded(true);
+      } else if (Array.isArray(result)) {
+        // Handle direct array response
+        setRestaurants(result);
         setDataLoaded(true);
       }
     } catch (error) {

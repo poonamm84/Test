@@ -31,8 +31,11 @@ function App() {
     try {
       const result = await apiCall(`/restaurants/${id}/tables`);
       
-      if (result.success) {
+      if (result && result.success) {
         setTables(result.data);
+      } else if (Array.isArray(result)) {
+        // Handle direct array response
+        setTables(result);
       }
     } catch (error) {
       console.error('Failed to load tables:', error);
@@ -139,6 +142,55 @@ function App() {
   };
 
   const handleBooking = async (e) => {
+    e.preventDefault();
+    if (!selectedTable || !bookingData.date || !bookingData.time) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    
+
+
+    // Make actual booking API call
+    try {
+      const result = await apiCall('/bookings', {
+        method: 'POST',
+        body: {
+          restaurantId: parseInt(id),
+          tableId: selectedTable.id,
+          date: bookingData.date,
+          time: bookingData.time,
+          guests: bookingData.guests,
+          specialRequests: bookingData.specialRequests
+        }
+      });
+
+      if (result && result.success) {
+        alert(`Table booked successfully!\n\nTable: ${selectedTable.name}\nDate: ${bookingData.date}\nTime: ${bookingData.time}\nGuests: ${bookingData.guests}`);
+          
+        // Reset form and navigate back
+        setShowTableCards(true);
+        setShowImageView(false);
+        setSelectedTable(null);
+        setCurrentImageIndex(0);
+        setBookingData({
+          date: '',
+          time: '',
+          guests: 2,
+          specialRequests: ''
+        });
+          
+        // Refresh tables to update status
+        loadTables();
+      } else {
+        alert('Failed to book table. Please try again.');
+      }
+    } catch (error) {
+      console.error('Booking error:', error);
+      alert('Failed to book table: ' + error.message);
+    }
+  };
+
+  const handleBookingOld = async (e) => {
     e.preventDefault();
     if (!selectedTable || !bookingData.date || !bookingData.time) {
       alert('Please fill in all required fields');

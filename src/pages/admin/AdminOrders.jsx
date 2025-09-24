@@ -37,8 +37,11 @@ const AdminOrders = () => {
     setIsLoading(true);
     try {
       const response = await apiCall('/admin/orders');
-      if (response.success) {
+      if (response && response.success) {
         setOrders(response.data);
+      } else if (Array.isArray(response)) {
+        // Handle direct array response
+        setOrders(response);
       }
     } catch (error) {
       console.error('Failed to load orders:', error);

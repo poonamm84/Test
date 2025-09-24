@@ -1,11 +1,9 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChefHat, Calendar, Menu, Star, Users, MapPin, Phone } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, role } = useAuth();
 
 
   return (

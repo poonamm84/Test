@@ -88,22 +88,21 @@ const PaymentView = () => {
       const orderItems = orderData.items.map(item => ({
         menuItemId: item.id,
         quantity: item.quantity,
-        price: item.price
       }));
 
       const result = await apiCall('/orders', {
         method: 'POST',
-        body: JSON.stringify({
+        body: {
           restaurantId: orderData.restaurant.id,
           orderType: orderData.orderDetails.orderType,
           items: orderItems,
           totalAmount: orderData.pricing.total,
           scheduledTime: orderData.orderDetails.scheduledTime,
           specialInstructions: orderData.orderDetails.specialInstructions
-        })
+        }
       });
 
-      if (result.success) {
+      if (result && result.success) {
         setIsProcessing(false);
         setPaymentSuccess(true);
         clearCart();
@@ -114,6 +113,8 @@ const PaymentView = () => {
         setTimeout(() => {
           navigate('/dashboard');
         }, 3000);
+      } else {
+        throw new Error(result?.message || 'Order creation failed');
       }
     } catch (error) {
       setIsProcessing(false);

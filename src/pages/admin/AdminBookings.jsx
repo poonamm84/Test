@@ -26,8 +26,11 @@ const AdminBookings = () => {
     setIsLoading(true);
     try {
       const response = await apiCall('/admin/bookings');
-      if (response.success) {
+      if (response && response.success) {
         setBookings(response.data);
+      } else if (Array.isArray(response)) {
+        // Handle direct array response
+        setBookings(response);
       }
     } catch (error) {
       console.error('Failed to load bookings:', error);

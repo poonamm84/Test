@@ -63,8 +63,11 @@ const AdminMenu = () => {
   const loadMenuItems = async () => {
     try {
       const response = await apiCall('/admin/menu');
-      if (response.success) {
+      if (response && response.success) {
         setMenuItems(response.data);
+      } else if (Array.isArray(response)) {
+        // Handle direct array response
+        setMenuItems(response);
       }
     } catch (error) {
       console.error('Failed to load menu items:', error);
@@ -76,8 +79,11 @@ const AdminMenu = () => {
   const loadTables = async () => {
     try {
       const response = await apiCall('/admin/tables');
-      if (response.success) {
+      if (response && response.success) {
         setTables(response.data);
+      } else if (Array.isArray(response)) {
+        // Handle direct array response
+        setTables(response);
       }
     } catch (error) {
       console.error('Failed to load tables:', error);

@@ -4,7 +4,6 @@ import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { useCustomerData } from '../context/CustomerDataContext';
 import { Star, MapPin, Clock, Users, ChefHat, Search, Filter, Heart, Calendar } from 'lucide-react';
 import AIChat from '../components/AIChat';
-import NotificationToast from '../components/NotificationToast';
 
 const CustomerDashboard = () => {
   const { user, logout } = useCustomerAuth();
@@ -40,7 +39,6 @@ const CustomerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <NotificationToast />
       
       {/* Header */}
       <header className="bg-white shadow-sm border-b">

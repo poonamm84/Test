@@ -99,7 +99,7 @@ export const SuperAdminAuthProvider = ({ children }) => {
       ...options,
     };
 
-    if (config.body && typeof config.body === 'object') {
+    if (config.body && typeof config.body === 'object' && !options.isFormData) {
       config.body = JSON.stringify(config.body);
     }
 

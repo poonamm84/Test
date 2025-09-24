@@ -37,14 +37,16 @@ const AdminOverview = () => {
     setIsLoading(true);
     try {
       const response = await apiCall('/admin/dashboard');
-      if (response.success) {
+      if (response && response.success) {
         setDashboardData(response.data);
       }
 
       // Load recent tables
       const tablesResponse = await apiCall('/admin/tables');
-      if (tablesResponse.success) {
+      if (tablesResponse && tablesResponse.success) {
         setRecentTables(tablesResponse.data.slice(0, 5));
+      } else if (Array.isArray(tablesResponse)) {
+        setRecentTables(tablesResponse.slice(0, 5));
       }
     } catch (error) {
       addNotification('Failed to load dashboard data', 'error');

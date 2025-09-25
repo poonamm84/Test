@@ -58,13 +58,16 @@ const SuperAdminSettings = () => {
     setIsLoading(true);
     try {
       const response = await apiCall('/super-admin/settings');
-      if (response.success) {
+      if (response && response.success) {
         setPlatformSettings(response.data.platform || platformSettings);
         setSecuritySettings(response.data.security || securitySettings);
         setEmailSettings(response.data.email || emailSettings);
+      } else {
+        console.warn('Settings endpoint not available, using default settings');
       }
     } catch (error) {
-      addNotification('Failed to load settings', 'error');
+      console.error('Failed to load settings:', error);
+      // Keep default settings if endpoint doesn't exist
     } finally {
       setIsLoading(false);
     }
@@ -80,6 +83,8 @@ const SuperAdminSettings = () => {
 
       if (response.success) {
         addNotification(`${settingsType} settings updated successfully`, 'success');
+        // Reload settings to ensure consistency
+        setTimeout(() => loadSettings(), 1000);
       }
     } catch (error) {
       addNotification(`Failed to update ${settingsType} settings`, 'error');

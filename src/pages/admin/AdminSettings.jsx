@@ -53,18 +53,30 @@ const AdminSettings = () => {
     setIsLoading(true);
     try {
       const response = await apiCall('/admin/restaurant');
-      if (response.success) {
+      if (response && response.success) {
         setRestaurantData(prev => ({
           ...prev,
-          ...response.data
+          ...(response.data || {})
         }));
+      } else {
+        console.warn('Unexpected restaurant response format:', response);
       }
     } catch (error) {
-      addNotification('Failed to load restaurant data', 'error');
+      console.error('Failed to load restaurant data:', error);
+      addNotification('Failed to load restaurant data from server', 'error');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Auto-refresh restaurant data
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadRestaurantData();
+    }, 120000); // Refresh every 2 minutes
+    
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSaveRestaurant = async (e) => {
     e.preventDefault();
@@ -77,6 +89,8 @@ const AdminSettings = () => {
 
       if (response.success) {
         addNotification('Restaurant settings updated successfully', 'success');
+        // Reload restaurant data to ensure consistency
+        setTimeout(() => loadRestaurantData(), 1000);
       }
     } catch (error) {
       addNotification('Failed to update restaurant settings', 'error');
@@ -95,6 +109,7 @@ const AdminSettings = () => {
 
       if (response.success) {
         addNotification('Notification settings updated successfully', 'success');
+        // Settings updated successfully - no need to reload
       }
     } catch (error) {
       addNotification('Failed to update notification settings', 'error');

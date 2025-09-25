@@ -27,19 +27,30 @@ const AdminBookings = () => {
     try {
       const response = await apiCall('/admin/bookings');
       if (response && response.success) {
-        setBookings(response.data);
+        setBookings(response.data || []);
       } else if (Array.isArray(response)) {
         // Handle direct array response
         setBookings(response);
+      } else {
+        console.warn('Unexpected bookings response format:', response);
+        setBookings([]);
       }
     } catch (error) {
       console.error('Failed to load bookings:', error);
-      // Set empty array for demo
-      setBookings([]);
+      addNotification('Failed to load bookings from server', 'error');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Auto-refresh bookings data
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadBookings();
+    }, 30000); // Refresh every 30 seconds
+    
+    return () => clearInterval(interval);
+  }, []);
 
   const filterBookings = () => {
     let filtered = [...bookings];
@@ -87,6 +98,8 @@ const AdminBookings = () => {
           booking.id === bookingId ? { ...booking, status: newStatus } : booking
         ));
         addNotification('Booking status updated successfully', 'success');
+        // Reload bookings to ensure consistency
+        setTimeout(() => loadBookings(), 1000);
       }
     } catch (error) {
       addNotification('Failed to update booking status', 'error');

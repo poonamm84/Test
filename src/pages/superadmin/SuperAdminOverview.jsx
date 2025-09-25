@@ -35,9 +35,12 @@ const SuperAdminOverview = () => {
       const response = await apiCall('/super-admin/dashboard');
       if (response.success) {
         setDashboardData(response.data);
+      } else {
+        console.warn('Unexpected super admin dashboard response format:', response);
       }
     } catch (error) {
-      addNotification('Failed to load dashboard data', 'error');
+      console.error('Super admin dashboard load error:', error);
+      addNotification('Failed to load dashboard data from server', 'error');
       // Use mock data for demo
       setDashboardData({
         stats: {
@@ -55,6 +58,15 @@ const SuperAdminOverview = () => {
       setIsLoading(false);
     }
   };
+
+  // Auto-refresh dashboard data
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadDashboardData();
+    }, 60000); // Refresh every minute
+    
+    return () => clearInterval(interval);
+  }, []);
 
   if (isLoading) {
     return (

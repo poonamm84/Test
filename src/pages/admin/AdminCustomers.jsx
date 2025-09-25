@@ -26,17 +26,30 @@ const AdminCustomers = () => {
     setIsLoading(true);
     try {
       const response = await apiCall('/admin/customers');
-      if (response.success) {
-        setCustomers(response.data);
+      if (response && response.success) {
+        setCustomers(response.data || []);
+      } else if (Array.isArray(response)) {
+        setCustomers(response);
+      } else {
+        console.warn('Unexpected customers response format:', response);
+        setCustomers([]);
       }
     } catch (error) {
       console.error('Failed to load customers:', error);
-      // Set empty array for demo
-      setCustomers([]);
+      addNotification('Failed to load customers from server', 'error');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Auto-refresh customers data
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadCustomers();
+    }, 60000); // Refresh every minute
+    
+    return () => clearInterval(interval);
+  }, []);
 
   const filterCustomers = () => {
     let filtered = [...customers];

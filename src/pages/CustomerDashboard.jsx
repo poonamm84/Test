@@ -16,9 +16,21 @@ const CustomerDashboard = () => {
   React.useEffect(() => {
     loadUserOrders();
     loadUserBookings();
-    const interval = setInterval(loadRestaurants, 30000); // Refresh every 30 seconds
+    
+    // Set up auto-refresh for restaurants
+    const interval = setInterval(() => {
+      loadRestaurants();
+    }, 30000); // Refresh every 30 seconds
+    
     return () => clearInterval(interval);
   }, []);
+
+  // Force refresh when component mounts
+  React.useEffect(() => {
+    if (restaurants.length === 0) {
+      loadRestaurants();
+    }
+  }, [restaurants.length]);
 
   const cuisines = ['all', 'Fine Dining', 'Japanese', 'Italian', 'Indian', 'Mexican'];
 

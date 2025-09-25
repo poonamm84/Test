@@ -139,7 +139,8 @@ router.post('/tables', [
                 id: result.id,
                 table_number,
                 capacity,
-                type
+                type,
+                status: 'available'
             }
         });
 
@@ -219,7 +220,11 @@ router.put('/tables/:id', [
 
         res.status(200).json({
             success: true,
-            message: 'Table updated successfully'
+            message: 'Table updated successfully',
+            data: {
+                id: parseInt(id),
+                updated: true
+            }
         });
 
     } catch (error) {
@@ -281,7 +286,11 @@ router.delete('/tables/:id', async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: 'Table deleted successfully'
+            message: 'Table deleted successfully',
+            data: {
+                id: parseInt(id),
+                deleted: true
+            }
         });
 
     } catch (error) {
@@ -353,7 +362,11 @@ router.post('/tables/:id/images', upload.array('images', 10), async (req, res) =
         res.status(201).json({
             success: true,
             message: `${req.files.length} image(s) uploaded successfully`,
-            data: uploadedImages
+            data: {
+                images: uploadedImages,
+                table_id: parseInt(id),
+                count: req.files.length
+            }
         });
 
     } catch (error) {
@@ -428,7 +441,12 @@ router.delete('/tables/:tableId/images/:imageId', async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: 'Image deleted successfully'
+            message: 'Image deleted successfully',
+            data: {
+                image_id: parseInt(imageId),
+                table_id: parseInt(tableId),
+                deleted: true
+            }
         });
 
     } catch (error) {
@@ -660,6 +678,7 @@ router.post('/menu', [
                 id: result.id,
                 name,
                 category,
+                cuisine,
                 price
             }
         });
@@ -743,7 +762,11 @@ router.put('/menu/:id', [
 
         res.status(200).json({
             success: true,
-            message: 'Menu item updated successfully'
+            message: 'Menu item updated successfully',
+            data: {
+                id: parseInt(id),
+                updated: true
+            }
         });
 
     } catch (error) {
@@ -777,7 +800,11 @@ router.delete('/menu/:id', async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: 'Menu item deleted successfully'
+            message: 'Menu item deleted successfully',
+            data: {
+                id: parseInt(id),
+                deleted: true
+            }
         });
 
     } catch (error) {
@@ -896,7 +923,8 @@ router.put('/orders/:id/status', [
             message: 'Order status updated successfully',
             data: {
                 orderId: id,
-                newStatus: status
+                newStatus: status,
+                updated: true
             }
         });
 

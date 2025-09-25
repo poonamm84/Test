@@ -49,19 +49,33 @@ const MenuView = () => {
     try {
       const result = await apiCall(`/restaurants/${id}/menu`);
       if (result && result.success) {
-        setMenuItems(result.data);
+        setMenuItems(result.data || []);
       } else if (Array.isArray(result)) {
         // Handle direct array response
         setMenuItems(result);
+      } else {
+        console.warn('Unexpected menu response format:', result);
+        setMenuItems([]);
       }
     } catch (error) {
       console.error('Failed to load menu:', error);
       addNotification('Failed to load menu', 'error');
-      setMenuItems([]);
+      // Don't clear existing menu items on error
     } finally {
       setIsLoadingMenu(false);
     }
   };
+
+  // Refresh menu data periodically
+  React.useEffect(() => {
+    if (id) {
+      const interval = setInterval(() => {
+        loadMenu();
+      }, 30000); // Refresh every 30 seconds
+      
+      return () => clearInterval(interval);
+    }
+  }, [id]);
 
   if (!restaurant) {
     return (

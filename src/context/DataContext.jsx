@@ -1,34 +1,33 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useAuth } from './AuthContext';
+import { useCustomerAuth } from './CustomerAuthContext';
 
-const DataContext = createContext();
+const CustomerDataContext = createContext();
 
-export const useData = () => {
-  const context = useContext(DataContext);
+export const useCustomerData = () => {
+  const context = useContext(CustomerDataContext);
   if (!context) {
-    throw new Error('useData must be used within a DataProvider');
+    throw new Error('useCustomerData must be used within a CustomerDataProvider');
   }
   return context;
 };
 
-
-export const DataProvider = ({ children }) => {
+export const CustomerDataProvider = ({ children }) => {
   const [restaurants, setRestaurants] = useState([]);
   const [orders, setOrders] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [cart, setCart] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
-  const { apiCall, isAuthenticated, authChecked, token } = useAuth();
+  const { apiCall, isAuthenticated, authChecked, token } = useCustomerAuth();
 
   // Load data from localStorage on mount
   useEffect(() => {
     const loadStoredData = () => {
       try {
-        const storedRestaurants = localStorage.getItem('restaurants');
-        const storedOrders = localStorage.getItem('orders');
-        const storedBookings = localStorage.getItem('bookings');
-        const storedCart = localStorage.getItem('cart');
+        const storedRestaurants = localStorage.getItem('customer_restaurants');
+        const storedOrders = localStorage.getItem('customer_orders');
+        const storedBookings = localStorage.getItem('customer_bookings');
+        const storedCart = localStorage.getItem('customer_cart');
         
         if (storedRestaurants) {
           setRestaurants(JSON.parse(storedRestaurants));
@@ -43,9 +42,9 @@ export const DataProvider = ({ children }) => {
           setCart(JSON.parse(storedCart));
         }
         
-        console.log('📦 Data restored from localStorage');
+        console.log('📦 Customer data restored from localStorage');
       } catch (error) {
-        console.error('Error loading stored data:', error);
+        console.error('Error loading stored customer data:', error);
       }
     };
     
@@ -55,85 +54,52 @@ export const DataProvider = ({ children }) => {
   // Save data to localStorage whenever it changes
   useEffect(() => {
     if (restaurants.length > 0) {
-      localStorage.setItem('restaurants', JSON.stringify(restaurants));
+      localStorage.setItem('customer_restaurants', JSON.stringify(restaurants));
     }
   }, [restaurants]);
 
   useEffect(() => {
     if (orders.length > 0) {
-      localStorage.setItem('orders', JSON.stringify(orders));
+      localStorage.setItem('customer_orders', JSON.stringify(orders));
     }
   }, [orders]);
 
   useEffect(() => {
     if (bookings.length > 0) {
-      localStorage.setItem('bookings', JSON.stringify(bookings));
+      localStorage.setItem('customer_bookings', JSON.stringify(bookings));
     }
   }, [bookings]);
 
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
+    localStorage.setItem('customer_cart', JSON.stringify(cart));
   }, [cart]);
+
   // Load restaurants from API
   const loadRestaurants = async () => {
     setIsLoading(true);
     try {
       const result = await apiCall('/restaurants');
       if (result && result.success) {
+        setRestaurants(result.data || []);
+        setDataLoaded(true);
+        console.log('🏪 Customer restaurants loaded from API');
+      } else if (result && Array.isArray(result)) {
+        // Handle direct array response from backend
         setRestaurants(result.data);
         setDataLoaded(true);
-        console.log('🏪 Restaurants loaded from API');
-      } else if (result && result.data) {
-        setRestaurants(result.data);
+      } else if (Array.isArray(result)) {
+        setRestaurants(result);
+        setDataLoaded(true);
+        console.log('🏪 Customer restaurants loaded from API (direct array)');
+      } else {
+        console.warn('Unexpected restaurants response format:', result);
+        setRestaurants([]);
         setDataLoaded(true);
       }
     } catch (error) {
       console.warn('⚠️ Failed to load restaurants from API:', error.message);
-      // Don't clear existing data on network errors
-      if (restaurants.length === 0) {
-        // Set fallback data if no stored data exists
-        setRestaurants([
-          {
-            id: 1,
-            name: 'The Golden Spoon',
-            cuisine: 'Fine Dining',
-            rating: 4.8,
-            image: 'https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg',
-            address: '123 Gourmet Street, Downtown',
-            phone: '+1 (555) 123-4567',
-            description: 'Exquisite fine dining experience with contemporary cuisine',
-            tables: [],
-            total_tables: 20,
-            available_tables: 12
-          },
-          {
-            id: 2,
-            name: 'Sakura Sushi',
-            cuisine: 'Japanese',
-            rating: 4.6,
-            image: 'https://images.pexels.com/photos/357756/pexels-photo-357756.jpeg',
-            address: '456 Zen Garden Ave, Midtown',
-            phone: '+1 (555) 234-5678',
-            description: 'Authentic Japanese cuisine with fresh sushi and sashimi',
-            tables: [],
-            total_tables: 15,
-            available_tables: 8
-          },
-          {
-            id: 3,
-            name: "Mama's Italian",
-            cuisine: 'Italian',
-            rating: 4.7,
-            image: 'https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg',
-            address: '789 Pasta Lane, Little Italy',
-            phone: '+1 (555) 345-6789',
-            description: 'Traditional Italian flavors in a cozy family atmosphere',
-            tables: [],
-            total_tables: 18,
-            available_tables: 10
-          }
-        ]);
-      }
+      // Keep existing data on network errors, don't replace with fallback
+      console.log('Keeping existing restaurant data due to network error');
     } finally {
       setIsLoading(false);
     }
@@ -144,22 +110,18 @@ export const DataProvider = ({ children }) => {
     if (authChecked) {
       loadRestaurants();
       
-      // Set up periodic refresh only if authenticated
-      let interval;
-      if (isAuthenticated && token) {
-        interval = setInterval(() => {
-          loadRestaurants();
-        }, 60000); // Refresh every minute
-      }
+      // Set up periodic refresh for all users (authenticated or not)
+      const interval = setInterval(() => {
+        loadRestaurants();
+      }, 30000); // Refresh every 30 seconds
+      
       return () => clearInterval(interval);
     }
   }, [authChecked, isAuthenticated, token]);
-  
-  // Admin functionality
-  const updateRestaurant = (restaurantId, updates) => {
-    setRestaurants(prev => prev.map(restaurant => 
-      restaurant.id === restaurantId ? { ...restaurant, ...updates } : restaurant
-    ));
+
+  // Force refresh restaurants data
+  const refreshRestaurants = async () => {
+    await loadRestaurants();
   };
 
   const addToCart = (item, restaurantId) => {
@@ -199,10 +161,10 @@ export const DataProvider = ({ children }) => {
       const result = await apiCall('/orders');
       if (result && result.success) {
         setOrders(result.data);
-        console.log('📋 Orders loaded from API');
+        console.log('📋 Customer orders loaded from API');
       }
     } catch (error) {
-      console.warn('⚠️ Failed to load orders:', error.message);
+      console.warn('⚠️ Failed to load customer orders:', error.message);
     }
   };
 
@@ -213,10 +175,10 @@ export const DataProvider = ({ children }) => {
       const result = await apiCall('/bookings');
       if (result && result.success) {
         setBookings(result.data);
-        console.log('📅 Bookings loaded from API');
+        console.log('📅 Customer bookings loaded from API');
       }
     } catch (error) {
-      console.warn('⚠️ Failed to load bookings:', error.message);
+      console.warn('⚠️ Failed to load customer bookings:', error.message);
     }
   };
 
@@ -225,10 +187,10 @@ export const DataProvider = ({ children }) => {
     isLoading,
     dataLoaded,
     loadRestaurants,
+    refreshRestaurants,
     orders,
     bookings,
     cart,
-    updateRestaurant,
     addToCart,
     removeFromCart,
     clearCart,
@@ -239,8 +201,8 @@ export const DataProvider = ({ children }) => {
   };
 
   return (
-    <DataContext.Provider value={value}>
+    <CustomerDataContext.Provider value={value}>
       {children}
-    </DataContext.Provider>
+    </CustomerDataContext.Provider>
   );
 };

@@ -39,6 +39,8 @@ const AdminOverview = () => {
       const response = await apiCall('/admin/dashboard');
       if (response && response.success) {
         setDashboardData(response.data);
+      } else {
+        console.warn('Unexpected dashboard response format:', response);
       }
 
       // Load recent tables
@@ -47,9 +49,13 @@ const AdminOverview = () => {
         setRecentTables(tablesResponse.data.slice(0, 5));
       } else if (Array.isArray(tablesResponse)) {
         setRecentTables(tablesResponse.slice(0, 5));
+      } else {
+        console.warn('Unexpected tables response format:', tablesResponse);
+        setRecentTables([]);
       }
     } catch (error) {
-      addNotification('Failed to load dashboard data', 'error');
+      console.error('Dashboard load error:', error);
+      addNotification('Failed to load dashboard data from server', 'error');
       // Set default data for demo
       setDashboardData({
         stats: {
@@ -69,6 +75,15 @@ const AdminOverview = () => {
       setIsLoading(false);
     }
   };
+
+  // Auto-refresh dashboard data
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadDashboardData();
+    }, 60000); // Refresh every minute
+    
+    return () => clearInterval(interval);
+  }, []);
 
   if (isLoading) {
     return (

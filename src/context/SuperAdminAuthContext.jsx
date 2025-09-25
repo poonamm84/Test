@@ -88,7 +88,9 @@ export const SuperAdminAuthProvider = ({ children }) => {
 
   // API helper function for super admin requests
   const apiCall = async (endpoint, options = {}) => {
-    setIsLoading(true);
+    if (!options.skipLoading) {
+      setIsLoading(true);
+    }
     const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
     const config = {
       headers: {
@@ -130,7 +132,9 @@ export const SuperAdminAuthProvider = ({ children }) => {
       }
       throw error;
     } finally {
-      setIsLoading(false);
+      if (!options.skipLoading) {
+        setIsLoading(false);
+      }
     }
   };
 

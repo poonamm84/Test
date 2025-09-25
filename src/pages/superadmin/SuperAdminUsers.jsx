@@ -41,60 +41,27 @@ const SuperAdminUsers = () => {
     try {
       const response = await apiCall('/super-admin/users');
       if (response.success) {
-        setUsers(response.data);
+        setUsers(response.data || { customers: [], admins: [] });
+      } else {
+        console.warn('Unexpected users response format:', response);
+        setUsers({ customers: [], admins: [] });
       }
     } catch (error) {
       console.error('Failed to load users:', error);
-      // Use mock data for demo
-      setUsers({
-        customers: [
-          {
-            id: 1,
-            name: 'John Doe',
-            email: 'john@example.com',
-            phone: '+1 (555) 123-4567',
-            role: 'customer',
-            is_active: true,
-            created_at: '2024-01-15',
-            total_orders: 12,
-            total_spent: 450
-          },
-          {
-            id: 2,
-            name: 'Jane Smith',
-            email: 'jane@example.com',
-            phone: '+1 (555) 234-5678',
-            role: 'customer',
-            is_active: true,
-            created_at: '2024-02-20',
-            total_orders: 8,
-            total_spent: 320
-          }
-        ],
-        admins: [
-          {
-            id: 3,
-            name: 'Golden Spoon Admin',
-            email: 'admin@goldenspoon.com',
-            role: 'admin',
-            restaurant_name: 'The Golden Spoon',
-            is_active: true,
-            created_at: '2024-01-10'
-          },
-          {
-            id: 4,
-            name: 'Platform Owner',
-            email: 'owner@restaurantai.com',
-            role: 'superadmin',
-            is_active: true,
-            created_at: '2024-01-01'
-          }
-        ]
-      });
+      addNotification('Failed to load users from server', 'error');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Auto-refresh users data
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadUsers();
+    }, 60000); // Refresh every minute
+    
+    return () => clearInterval(interval);
+  }, []);
 
   const filterUsers = () => {
     let filteredCustomers = [...users.customers];
@@ -134,6 +101,8 @@ const SuperAdminUsers = () => {
           )
         }));
         addNotification(`User ${!currentStatus ? 'activated' : 'deactivated'} successfully`, 'success');
+        // Reload users to ensure consistency
+        setTimeout(() => loadUsers(), 1000);
       }
     } catch (error) {
       console.error('Failed to update user status:', error);

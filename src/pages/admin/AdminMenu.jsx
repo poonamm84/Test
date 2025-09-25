@@ -68,11 +68,13 @@ const AdminMenu = () => {
       } else if (Array.isArray(response)) {
         // Handle direct array response
         setMenuItems(response);
+      } else {
+        console.warn('Unexpected menu response format:', response);
+        setMenuItems([]);
       }
     } catch (error) {
       console.error('Failed to load menu items:', error);
-      // Set empty array for demo
-      setMenuItems([]);
+      addNotification('Failed to load menu items from server', 'error');
     }
   };
 
@@ -84,10 +86,13 @@ const AdminMenu = () => {
       } else if (Array.isArray(response)) {
         // Handle direct array response
         setTables(response);
+      } else {
+        console.warn('Unexpected tables response format:', response);
+        setTables([]);
       }
     } catch (error) {
       console.error('Failed to load tables:', error);
-      setTables([]);
+      addNotification('Failed to load tables from server', 'error');
     } finally {
       setIsLoading(false);
     }
@@ -121,6 +126,7 @@ const AdminMenu = () => {
           x_position: 0,
           y_position: 0
         });
+        // Reload tables to get fresh data
         loadTables();
       }
     } catch (error) {
@@ -155,6 +161,7 @@ const AdminMenu = () => {
       if (result.success) {
         addNotification(`${files.length} image(s) uploaded successfully`, 'success');
         setShowImageModal(false);
+        // Reload tables to get fresh data
         loadTables();
       } else {
         addNotification(result.message || 'Failed to upload images', 'error');
@@ -176,6 +183,7 @@ const AdminMenu = () => {
 
       if (response.success) {
         addNotification('Table deleted successfully', 'success');
+        // Reload tables to get fresh data
         loadTables();
       }
     } catch (error) {
@@ -193,6 +201,7 @@ const AdminMenu = () => {
 
       if (response.success) {
         addNotification('Image deleted successfully', 'success');
+        // Reload tables to get fresh data
         loadTables();
       }
     } catch (error) {
@@ -236,15 +245,18 @@ const AdminMenu = () => {
       if (response.success) {
         addNotification('Menu item added successfully', 'success');
         setShowAddModal(false);
+        // Reset form
         setNewItem({
           name: '',
           category: '',
+          cuisine: '',
           price: '',
           description: '',
           image: '',
           dietary: '',
           chef_special: false
         });
+        // Reload menu items to get fresh data
         loadMenuItems();
       }
     } catch (error) {
@@ -262,6 +274,7 @@ const AdminMenu = () => {
       if (response.success) {
         addNotification('Menu item updated successfully', 'success');
         setEditingItem(null);
+        // Reload menu items to get fresh data
         loadMenuItems();
       }
     } catch (error) {
@@ -279,6 +292,7 @@ const AdminMenu = () => {
 
       if (response.success) {
         addNotification('Menu item deleted successfully', 'success');
+        // Reload menu items to get fresh data
         loadMenuItems();
       }
     } catch (error) {
@@ -287,7 +301,11 @@ const AdminMenu = () => {
   };
 
   const toggleAvailability = async (itemId, currentStatus) => {
-    await handleUpdateItem(itemId, { available: !currentStatus });
+    try {
+      await handleUpdateItem(itemId, { available: !currentStatus });
+    } catch (error) {
+      addNotification('Failed to update item availability', 'error');
+    }
   };
 
   const categories = ['all', ...new Set(menuItems.map(item => item.category))];
@@ -565,6 +583,9 @@ const AdminMenu = () => {
                   <option value="Pasta">Pasta</option>
                   <option value="Sushi">Sushi</option>
                   <option value="Sashimi">Sashimi</option>
+                  <option value="Noodles">Noodles</option>
+                  <option value="Salads">Salads</option>
+                  <option value="Soups">Soups</option>
                 </select>
                 <select
                   value={newItem.cuisine || ''}
@@ -699,6 +720,9 @@ const AdminMenu = () => {
                   <option value="Pasta">Pasta</option>
                   <option value="Sushi">Sushi</option>
                   <option value="Sashimi">Sashimi</option>
+                  <option value="Noodles">Noodles</option>
+                  <option value="Salads">Salads</option>
+                  <option value="Soups">Soups</option>
                 </select>
                 <select
                   value={editingItem.cuisine || ''}

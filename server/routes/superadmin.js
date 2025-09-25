@@ -93,17 +93,21 @@ router.get('/restaurants', async (req, res) => {
             ORDER BY r.created_at DESC
         `);
 
+        // Ensure we always return an array
+        const restaurantList = restaurants || [];
+
         res.status(200).json({
             success: true,
             message: 'Restaurants retrieved successfully',
-            data: restaurants
+            data: restaurantList
         });
 
     } catch (error) {
         console.error('Get all restaurants error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error while fetching restaurants'
+            message: 'Internal server error while fetching restaurants',
+            data: []
         });
     }
 });
@@ -141,12 +145,16 @@ router.get('/users', async (req, res) => {
             ORDER BY u.created_at DESC
         `);
 
+        // Ensure we always return arrays
+        const customerList = users || [];
+        const adminList = adminUsers || [];
+
         res.status(200).json({
             success: true,
             message: 'Users retrieved successfully',
             data: {
-                customers: users,
-                admins: adminUsers
+                customers: customerList,
+                admins: adminList
             }
         });
 
@@ -154,7 +162,11 @@ router.get('/users', async (req, res) => {
         console.error('Get all users error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error while fetching users'
+            message: 'Internal server error while fetching users',
+            data: {
+                customers: [],
+                admins: []
+            }
         });
     }
 });
@@ -192,17 +204,21 @@ router.get('/orders', async (req, res) => {
 
         const orders = await db.all(query, queryParams);
 
+        // Ensure we always return an array
+        const orderList = orders || [];
+
         res.status(200).json({
             success: true,
             message: 'Orders retrieved successfully',
-            data: orders
+            data: orderList
         });
 
     } catch (error) {
         console.error('Get all orders error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error while fetching orders'
+            message: 'Internal server error while fetching orders',
+            data: []
         });
     }
 });
@@ -248,6 +264,12 @@ router.get('/analytics', async (req, res) => {
             ORDER BY count DESC
         `);
 
+        // Ensure we always return objects with arrays
+        const revenueData = revenueByMonth || [];
+        const performanceData = restaurantPerformance || [];
+        const statusData = orderStatusDistribution || [];
+        const cuisineData = popularCuisines || [];
+
         // Popular cuisines
         const popularCuisines = await db.all(`
             SELECT 
@@ -264,10 +286,10 @@ router.get('/analytics', async (req, res) => {
             success: true,
             message: 'Analytics data retrieved successfully',
             data: {
-                revenueByMonth,
-                restaurantPerformance,
-                orderStatusDistribution,
-                popularCuisines
+                revenueByMonth: revenueData,
+                restaurantPerformance: performanceData,
+                orderStatusDistribution: statusData,
+                popularCuisines: cuisineData
             }
         });
 
@@ -275,7 +297,13 @@ router.get('/analytics', async (req, res) => {
         console.error('Get analytics error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error while fetching analytics'
+            message: 'Internal server error while fetching analytics',
+            data: {
+                revenueByMonth: [],
+                restaurantPerformance: [],
+                orderStatusDistribution: [],
+                popularCuisines: []
+            }
         });
     }
 });

@@ -20,17 +20,21 @@ router.get('/', async (req, res) => {
             ORDER BY r.rating DESC
         `);
 
+        // Ensure we always return an array
+        const restaurantList = restaurants || [];
+
         res.status(200).json({
             success: true,
             message: 'Restaurants retrieved successfully',
-            data: restaurants
+            data: restaurantList
         });
 
     } catch (error) {
         console.error('Get restaurants error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error while fetching restaurants'
+            message: 'Internal server error while fetching restaurants',
+            data: []
         });
     }
 });
@@ -103,17 +107,21 @@ router.get('/:id/menu', async (req, res) => {
             ORDER BY category, name
         `, [id]);
 
+        // Ensure we always return an array
+        const menuList = menuItems || [];
+
         res.status(200).json({
             success: true,
             message: 'Menu retrieved successfully',
-            data: menuItems
+            data: menuList
         });
 
     } catch (error) {
         console.error('Get menu error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error while fetching menu'
+            message: 'Internal server error while fetching menu',
+            data: []
         });
     }
 });
@@ -160,17 +168,21 @@ router.get('/:id/tables', async (req, res) => {
             table.images = images;
         }
         
+        // Ensure we always return an array
+        const tableList = tables || [];
+        
         res.status(200).json({
             success: true,
             message: 'Tables retrieved successfully',
-            data: tables
+            data: tableList
         });
 
     } catch (error) {
         console.error('Get tables error:', error);
         res.status(500).json({
             success: false,
-            message: 'Internal server error while fetching tables'
+            message: 'Internal server error while fetching tables',
+            data: []
         });
     }
 });

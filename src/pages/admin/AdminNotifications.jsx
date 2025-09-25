@@ -19,15 +19,30 @@ const AdminNotifications = () => {
     setIsLoading(true);
     try {
       const response = await apiCall('/admin/notifications');
-      if (response.success) {
-        setNotifications(response.data);
+      if (response && response.success) {
+        setNotifications(response.data || []);
+      } else if (Array.isArray(response)) {
+        setNotifications(response);
+      } else {
+        console.warn('Unexpected notifications response format:', response);
+        setNotifications([]);
       }
     } catch (error) {
-      addNotification('Failed to load notifications', 'error');
+      console.error('Failed to load notifications:', error);
+      addNotification('Failed to load notifications from server', 'error');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Auto-refresh notifications
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadNotifications();
+    }, 60000); // Refresh every minute
+    
+    return () => clearInterval(interval);
+  }, []);
 
   const markAsRead = async (notificationId) => {
     try {
@@ -39,6 +54,8 @@ const AdminNotifications = () => {
         setNotifications(prev => prev.map(notif => 
           notif.id === notificationId ? { ...notif, read: true } : notif
         ));
+        // Reload notifications to ensure consistency
+        setTimeout(() => loadNotifications(), 1000);
       }
     } catch (error) {
       addNotification('Failed to mark notification as read', 'error');
@@ -54,6 +71,8 @@ const AdminNotifications = () => {
       if (response.success) {
         setNotifications(prev => prev.filter(notif => notif.id !== notificationId));
         addNotification('Notification deleted', 'success');
+        // Reload notifications to ensure consistency
+        setTimeout(() => loadNotifications(), 1000);
       }
     } catch (error) {
       addNotification('Failed to delete notification', 'error');

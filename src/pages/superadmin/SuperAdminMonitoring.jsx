@@ -40,13 +40,16 @@ const SuperAdminMonitoring = () => {
     setIsLoading(true);
     try {
       const response = await apiCall('/super-admin/monitoring');
-      if (response.success) {
+      if (response && response.success) {
         setSystemStatus(response.data.systemStatus);
         setPerformanceMetrics(response.data.performanceMetrics);
         setAlerts(response.data.alerts);
+      } else {
+        console.warn('Monitoring endpoint not available, using mock data');
       }
     } catch (error) {
-      // Use mock data for demo
+      console.error('Failed to load monitoring data:', error);
+      // Use mock data since monitoring endpoint might not exist
       setPerformanceMetrics([
         { time: '10:00', cpu: 45, memory: 62, requests: 1200 },
         { time: '10:15', cpu: 52, memory: 65, requests: 1350 },
@@ -74,6 +77,15 @@ const SuperAdminMonitoring = () => {
       setIsLoading(false);
     }
   };
+
+  // Auto-refresh monitoring data
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadMonitoringData();
+    }, 30000); // Refresh every 30 seconds for real-time monitoring
+    
+    return () => clearInterval(interval);
+  }, []);
 
   const getStatusColor = (status) => {
     switch (status) {

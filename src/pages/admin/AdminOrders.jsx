@@ -38,19 +38,30 @@ const AdminOrders = () => {
     try {
       const response = await apiCall('/admin/orders');
       if (response && response.success) {
-        setOrders(response.data);
+        setOrders(response.data || []);
       } else if (Array.isArray(response)) {
         // Handle direct array response
         setOrders(response);
+      } else {
+        console.warn('Unexpected orders response format:', response);
+        setOrders([]);
       }
     } catch (error) {
       console.error('Failed to load orders:', error);
-      // Set empty array for demo
-      setOrders([]);
+      addNotification('Failed to load orders from server', 'error');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Auto-refresh orders data
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadOrders();
+    }, 30000); // Refresh every 30 seconds
+    
+    return () => clearInterval(interval);
+  }, []);
 
   const filterOrders = () => {
     let filtered = [...orders];
@@ -82,6 +93,8 @@ const AdminOrders = () => {
           order.id === orderId ? { ...order, status: newStatus } : order
         ));
         addNotification('Order status updated successfully', 'success');
+        // Reload orders to ensure consistency
+        setTimeout(() => loadOrders(), 1000);
       }
     } catch (error) {
       addNotification('Failed to update order status', 'error');

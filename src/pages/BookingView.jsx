@@ -32,17 +32,32 @@ function App() {
       const result = await apiCall(`/restaurants/${id}/tables`);
       
       if (result && result.success) {
-        setTables(result.data);
+        setTables(result.data || []);
       } else if (Array.isArray(result)) {
         // Handle direct array response
         setTables(result);
+      } else {
+        console.warn('Unexpected tables response format:', result);
+        setTables([]);
       }
     } catch (error) {
       console.error('Failed to load tables:', error);
+      // Don't clear existing tables on error
     } finally {
       setIsLoadingPhotos(false);
     }
   };
+
+  // Auto-refresh tables data
+  React.useEffect(() => {
+    if (id) {
+      const interval = setInterval(() => {
+        loadTables();
+      }, 30000); // Refresh every 30 seconds
+      
+      return () => clearInterval(interval);
+    }
+  }, [id]);
 
   // Convert backend table data to display format
   const getTableDisplayData = (table) => {

@@ -34,23 +34,33 @@ const AdminAnalytics = () => {
     setIsLoading(true);
     try {
       const response = await apiCall(`/admin/analytics?range=${timeRange}`);
-      if (response.success) {
-        setAnalyticsData(response.data);
+      if (response && response.success) {
+        setAnalyticsData(response.data || {
+          revenue: {},
+          orders: {},
+          customers: {},
+          popular_items: [],
+          daily_stats: []
+        });
+      } else {
+        console.warn('Unexpected analytics response format:', response);
       }
     } catch (error) {
       console.error('Failed to load analytics:', error);
-      // Set default analytics data for demo
-      setAnalyticsData({
-        revenue: { total: 0, growth: 0 },
-        orders: { total: 0, growth: 0, avg_value: 0 },
-        customers: { new: 0, growth: 0 },
-        popular_items: [],
-        daily_stats: []
-      });
+      addNotification('Failed to load analytics from server', 'error');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Auto-refresh analytics data
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadAnalytics();
+    }, 120000); // Refresh every 2 minutes
+    
+    return () => clearInterval(interval);
+  }, [timeRange]);
 
   if (isLoading) {
     return (

@@ -39,59 +39,29 @@ const SuperAdminRestaurants = () => {
     try {
       const response = await apiCall('/super-admin/restaurants');
       if (response.success) {
-        setRestaurants(response.data);
+        setRestaurants(response.data || []);
+      } else if (Array.isArray(response)) {
+        setRestaurants(response);
+      } else {
+        console.warn('Unexpected restaurants response format:', response);
+        setRestaurants([]);
       }
     } catch (error) {
       console.error('Failed to load restaurants:', error);
-      // Use mock data for demo
-      setRestaurants([
-        {
-          id: 1,
-          name: 'The Golden Spoon',
-          cuisine: 'Fine Dining',
-          rating: 4.8,
-          image: 'https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg',
-          address: '123 Gourmet Street, Downtown',
-          phone: '+1 (555) 123-4567',
-          admin_id: 'GS001',
-          is_active: true,
-          total_orders: 234,
-          revenue: 45000,
-          created_at: '2024-01-15'
-        },
-        {
-          id: 2,
-          name: 'Sakura Sushi',
-          cuisine: 'Japanese',
-          rating: 4.6,
-          image: 'https://images.pexels.com/photos/357756/pexels-photo-357756.jpeg',
-          address: '456 Zen Garden Ave, Midtown',
-          phone: '+1 (555) 234-5678',
-          admin_id: 'SS002',
-          is_active: true,
-          total_orders: 189,
-          revenue: 38000,
-          created_at: '2024-02-20'
-        },
-        {
-          id: 3,
-          name: "Mama's Italian",
-          cuisine: 'Italian',
-          rating: 4.7,
-          image: 'https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg',
-          address: '789 Pasta Lane, Little Italy',
-          phone: '+1 (555) 345-6789',
-          admin_id: 'MI003',
-          is_active: true,
-          total_orders: 201,
-          revenue: 42000,
-          created_at: '2024-01-30'
-        }
-      ]);
+      addNotification('Failed to load restaurants from server', 'error');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Auto-refresh restaurants data
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadRestaurants();
+    }, 60000); // Refresh every minute
+    
+    return () => clearInterval(interval);
+  }, []);
 
   const filterRestaurants = () => {
     let filtered = [...restaurants];
@@ -121,6 +91,8 @@ const SuperAdminRestaurants = () => {
             : restaurant
         ));
         addNotification(`Restaurant ${!currentStatus ? 'activated' : 'deactivated'} successfully`, 'success');
+        // Reload restaurants to ensure consistency
+        setTimeout(() => loadRestaurants(), 1000);
       }
     } catch (error) {
       console.error('Failed to update restaurant status:', error);

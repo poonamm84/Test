@@ -1,6 +1,8 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const db = require('../config/database');
 const { authenticateToken, authorizeRole } = require('../middleware/auth');
+const { body, validationResult } = require('express-validator');
 
 const router = express.Router();
 
@@ -8,6 +10,223 @@ const router = express.Router();
 router.use(authenticateToken);
 router.use(authorizeRole(['superadmin']));
 
+// POST /api/super-admin/restaurants - Add new restaurant
+router.post('/restaurants', [
+    body('name').trim().isLength({ min: 1, max: 100 }).withMessage('Restaurant name is required and must be less than 100 characters'),
+    body('cuisine').trim().isLength({ min: 1, max: 50 }).withMessage('Cuisine type is required'),
+    body('address').trim().isLength({ min: 1, max: 200 }).withMessage('Address is required'),
+    body('phone').trim().isLength({ min: 1, max: 20 }).withMessage('Phone number is required'),
+    body('admin_id').trim().isLength({ min: 1, max: 20 }).withMessage('Admin ID is required'),
+    body('admin_password').isLength({ min: 6 }).withMessage('Admin password must be at least 6 characters'),
+    body('description').optional().isLength({ max: 500 }).withMessage('Description must be less than 500 characters'),
+    body('image').optional().isURL().withMessage('Image must be a valid URL')
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Validation failed',
+                errors: errors.array()
+            });
+        }
+
+        const { name, cuisine, address, phone, description, image, admin_id, admin_password } = req.body;
+
+        // Check if admin_id already exists
+        const existingAdmin = await db.get(
+            'SELECT id FROM restaurants WHERE admin_id = ?',
+            [admin_id]
+        );
+
+        if (existingAdmin) {
+            return res.status(400).json({
+                success: false,
+                message: 'Admin ID already exists'
+            });
+        }
+
+        // Hash admin password
+        const hashedPassword = await bcrypt.hash(admin_password, 12);
+
+        // Insert restaurant
+        const restaurantResult = await db.run(`
+            INSERT INTO restaurants (name, cuisine, address, phone, description, image, admin_id, admin_password_hash, is_active)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+        `, [name, cuisine, address, phone, description || null, image || null, admin_id, hashedPassword]);
+
+        // Create admin user entry
+        await db.run(`
+            INSERT INTO users (name, email, password_hash, role, restaurant_id, admin_id, is_active)
+            VALUES (?, ?, ?, 'admin', ?, ?, 1)
+        `, [`${name} Admin`, `admin@${admin_id.toLowerCase()}.com`, hashedPassword, restaurantResult.id, admin_id]);
+
+        console.log(`✅ Restaurant created: ${name} with Admin ID ${admin_id} by Super Admin ${req.user.id}`);
+
+        res.status(201).json({
+            success: true,
+            message: 'Restaurant created successfully',
+            data: {
+                id: restaurantResult.id,
+                name,
+                admin_id
+            }
+        });
+
+    } catch (error) {
+        console.error('Create restaurant error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error while creating restaurant'
+        });
+    }
+});
+
+// PUT /api/super-admin/restaurants/:id - Update restaurant
+router.put('/restaurants/:id', [
+    body('name').optional().trim().isLength({ min: 1, max: 100 }).withMessage('Restaurant name must be less than 100 characters'),
+    body('cuisine').optional().trim().isLength({ min: 1, max: 50 }).withMessage('Cuisine type is required'),
+    body('address').optional().trim().isLength({ min: 1, max: 200 }).withMessage('Address is required'),
+    body('phone').optional().trim().isLength({ min: 1, max: 20 }).withMessage('Phone number is required'),
+    body('description').optional().isLength({ max: 500 }).withMessage('Description must be less than 500 characters'),
+    body('image').optional().isURL().withMessage('Image must be a valid URL'),
+    body('rating').optional().isFloat({ min: 1, max: 5 }).withMessage('Rating must be between 1 and 5')
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Validation failed',
+                errors: errors.array()
+            });
+        }
+
+        const { id } = req.params;
+
+        // Check if restaurant exists
+        const existingRestaurant = await db.get(
+            'SELECT id FROM restaurants WHERE id = ?',
+            [id]
+        );
+
+        if (!existingRestaurant) {
+            return res.status(404).json({
+                success: false,
+                message: 'Restaurant not found'
+            });
+        }
+
+        // Build update query dynamically
+        const updateFields = [];
+        const updateValues = [];
+
+        const allowedFields = ['name', 'cuisine', 'address', 'phone', 'description', 'image', 'rating'];
+        
+        for (const field of allowedFields) {
+            if (req.body.hasOwnProperty(field)) {
+                updateFields.push(`${field} = ?`);
+                updateValues.push(req.body[field]);
+            }
+        }
+
+        if (updateFields.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No valid fields to update'
+            });
+        }
+
+        updateFields.push('updated_at = CURRENT_TIMESTAMP');
+        updateValues.push(id);
+
+        await db.run(
+            `UPDATE restaurants SET ${updateFields.join(', ')} WHERE id = ?`,
+            updateValues
+        );
+
+        console.log(`✅ Restaurant updated: ID ${id} by Super Admin ${req.user.id}`);
+
+        res.status(200).json({
+            success: true,
+            message: 'Restaurant updated successfully',
+            data: {
+                id: parseInt(id),
+                updated: true
+            }
+        });
+
+    } catch (error) {
+        console.error('Update restaurant error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error while updating restaurant'
+        });
+    }
+});
+
+// PUT /api/super-admin/restaurants/:id/status - Toggle restaurant status
+router.put('/restaurants/:id/status', [
+    body('is_active').isBoolean().withMessage('is_active must be a boolean')
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Validation failed',
+                errors: errors.array()
+            });
+        }
+
+        const { id } = req.params;
+        const { is_active } = req.body;
+
+        // Check if restaurant exists
+        const existingRestaurant = await db.get(
+            'SELECT id, name FROM restaurants WHERE id = ?',
+            [id]
+        );
+
+        if (!existingRestaurant) {
+            return res.status(404).json({
+                success: false,
+                message: 'Restaurant not found'
+            });
+        }
+
+        // Update restaurant status
+        await db.run(
+            'UPDATE restaurants SET is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            [is_active, id]
+        );
+
+        // Also update the admin user status
+        await db.run(
+            'UPDATE users SET is_active = ? WHERE restaurant_id = ? AND role = "admin"',
+            [is_active, id]
+        );
+
+        console.log(`✅ Restaurant status updated: ${existingRestaurant.name} set to ${is_active ? 'active' : 'inactive'} by Super Admin ${req.user.id}`);
+
+        res.status(200).json({
+            success: true,
+            message: `Restaurant ${is_active ? 'activated' : 'deactivated'} successfully`,
+            data: {
+                id: parseInt(id),
+                is_active,
+                updated: true
+            }
+        });
+
+    } catch (error) {
+        console.error('Update restaurant status error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error while updating restaurant status'
+        });
+    }
+});
 // GET /api/super-admin/dashboard - Get platform analytics
 router.get('/dashboard', async (req, res) => {
     try {

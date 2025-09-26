@@ -493,16 +493,25 @@ router.post('/login', loginValidation, handleValidationErrors, async (req, res) 
         );
 
         if (restaurant) {
+            // Check if restaurant is active
+            if (!restaurant.is_active) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Subscription Over',
+                    code: 'SUBSCRIPTION_EXPIRED'
+                });
+            }
+
             // Verify admin password
             const isValidPassword = await bcrypt.compare(password, restaurant.admin_password_hash);
             if (isValidPassword) {
                 // Get admin user details
                 const adminUser = await db.get(
-                    'SELECT * FROM users WHERE admin_id = ? AND role = "admin" AND is_active = 1',
+                    'SELECT * FROM users WHERE admin_id = ? AND role = "admin"',
                     [identifier]
                 );
 
-                if (adminUser) {
+                if (adminUser && adminUser.is_active) {
                     // Generate JWT token for admin
                     const token = generateToken(adminUser.id, 'admin', { 
                         restaurantId: restaurant.id,
@@ -526,6 +535,12 @@ router.post('/login', loginValidation, handleValidationErrors, async (req, res) 
                                 adminId: identifier
                             }
                         }
+                    });
+                } else if (adminUser && !adminUser.is_active) {
+                    return res.status(403).json({
+                        success: false,
+                        message: 'Subscription Over',
+                        code: 'SUBSCRIPTION_EXPIRED'
                     });
                 }
             }

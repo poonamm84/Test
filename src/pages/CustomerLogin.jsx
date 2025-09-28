@@ -139,6 +139,8 @@ const CustomerLogin = () => {
         
         // Only handle customer navigation
         navigate(from.pathname || '/dashboard');
+      } else if (result.code === 'SUBSCRIPTION_EXPIRED') {
+        setErrors({ password: 'Subscription Over - Your restaurant subscription has expired. Please contact support.' });
       } else {
         setErrors({ password: 'Invalid email or password' });
       }

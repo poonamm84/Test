@@ -89,6 +89,18 @@ const SuperAdminRestaurants = () => {
       return;
     }
 
+    // Validate admin_id format
+    if (!/^[A-Z]{2}\d{3}$/.test(newRestaurant.admin_id)) {
+      addNotification('Admin ID must be in format: XX000 (e.g., RS001)', 'error');
+      return;
+    }
+
+    // Validate password strength
+    if (newRestaurant.admin_password.length < 6) {
+      addNotification('Admin password must be at least 6 characters long', 'error');
+      return;
+    }
+
     setIsSaving(true);
     try {
       const response = await apiCall('/super-admin/restaurants', {

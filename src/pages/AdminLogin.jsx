@@ -54,6 +54,8 @@ const AdminLogin = () => {
         if (user.role === 'admin') {
           navigate(from.pathname || '/admin', { replace: true });
         }
+      } else if (response.code === 'SUBSCRIPTION_EXPIRED') {
+        addNotification('Subscription Over - Your restaurant subscription has expired. Please contact support.', 'error');
       }
     })
     .catch(error => {

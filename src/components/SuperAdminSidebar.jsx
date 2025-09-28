@@ -28,7 +28,7 @@ const SuperAdminSidebar = () => {
   ];
 
   return (
-    <div className="w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-white min-h-screen flex flex-col">
+    <div className="w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-white min-h-screen flex flex-col fixed left-0 top-0 z-40">
       {/* Header */}
       <div className="p-6 border-b border-slate-700">
         <div className="flex items-center space-x-3">
@@ -43,7 +43,7 @@ const SuperAdminSidebar = () => {
       </div>
 
       {/* Navigation Menu */}
-      <nav className="flex-1 py-6">
+      <nav className="flex-1 py-6 overflow-y-auto">
         <ul className="space-y-2 px-4">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;

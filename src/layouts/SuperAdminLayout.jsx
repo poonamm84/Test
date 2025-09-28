@@ -11,18 +11,20 @@ import SuperAdminSettings from '../pages/superadmin/SuperAdminSettings';
 
 const SuperAdminLayout = () => {
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50 overflow-hidden">
       <SuperAdminSidebar />
-      <div className="flex-1 ml-64 p-8">
-        <Routes>
-          <Route path="/" element={<SuperAdminOverview />} />
-          <Route path="/restaurants" element={<SuperAdminRestaurants />} />
-          <Route path="/users" element={<SuperAdminUsers />} />
-          <Route path="/analytics" element={<SuperAdminAnalytics />} />
-          <Route path="/monitoring" element={<SuperAdminMonitoring />} />
-          <Route path="/notifications" element={<SuperAdminNotifications />} />
-          <Route path="/settings" element={<SuperAdminSettings />} />
-        </Routes>
+      <div className="flex-1 ml-64 overflow-y-auto">
+        <div className="p-8">
+          <Routes>
+            <Route path="/" element={<SuperAdminOverview />} />
+            <Route path="/restaurants" element={<SuperAdminRestaurants />} />
+            <Route path="/users" element={<SuperAdminUsers />} />
+            <Route path="/analytics" element={<SuperAdminAnalytics />} />
+            <Route path="/monitoring" element={<SuperAdminMonitoring />} />
+            <Route path="/notifications" element={<SuperAdminNotifications />} />
+            <Route path="/settings" element={<SuperAdminSettings />} />
+          </Routes>
+        </div>
       </div>
     </div>
   );

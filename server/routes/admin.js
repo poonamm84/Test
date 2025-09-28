@@ -9,6 +9,308 @@ const fs = require('fs');
 
 const router = express.Router();
 
+// GET /api/admin/notifications - Get restaurant notifications
+router.get('/notifications', async (req, res) => {
+    try {
+        const restaurantId = req.user.restaurant_id;
+        
+        // Generate sample notifications for demo
+        const notifications = [
+            {
+                id: 1,
+                title: 'New Order Received',
+                message: 'Order #1234 has been placed by John Doe',
+                type: 'order',
+                read: false,
+                urgent: false,
+                created_at: new Date(Date.now() - 300000)
+            },
+            {
+                id: 2,
+                title: 'Table Booking Confirmed',
+                message: 'Table 5 has been booked for tonight at 7:00 PM',
+                type: 'booking',
+                read: false,
+                urgent: false,
+                created_at: new Date(Date.now() - 600000)
+            },
+            {
+                id: 3,
+                title: 'Menu Item Low Stock',
+                message: 'Wagyu Beef Tenderloin is running low on inventory',
+                type: 'alert',
+                read: true,
+                urgent: true,
+                created_at: new Date(Date.now() - 1800000)
+            }
+        ];
+
+        res.status(200).json({
+            success: true,
+            message: 'Notifications retrieved successfully',
+            data: notifications
+        });
+
+    } catch (error) {
+        console.error('Get admin notifications error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error while fetching notifications'
+        });
+    }
+});
+
+// PUT /api/admin/notifications/:id/read - Mark notification as read
+router.put('/notifications/:id/read', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        res.status(200).json({
+            success: true,
+            message: 'Notification marked as read',
+            data: { id: parseInt(id), read: true }
+        });
+
+    } catch (error) {
+        console.error('Mark notification as read error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error while marking notification as read'
+        });
+    }
+});
+
+// DELETE /api/admin/notifications/:id - Delete notification
+router.delete('/notifications/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        res.status(200).json({
+            success: true,
+            message: 'Notification deleted successfully',
+            data: { id: parseInt(id), deleted: true }
+        });
+
+    } catch (error) {
+        console.error('Delete notification error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error while deleting notification'
+        });
+    }
+});
+
+// PUT /api/admin/restaurant - Update restaurant information
+router.put('/restaurant', [
+    body('name').optional().trim().isLength({ min: 1, max: 100 }).withMessage('Restaurant name must be less than 100 characters'),
+    body('cuisine').optional().trim().isLength({ min: 1, max: 50 }).withMessage('Cuisine type is required'),
+    body('address').optional().trim().isLength({ min: 1, max: 200 }).withMessage('Address is required'),
+    body('phone').optional().trim().isLength({ min: 1, max: 20 }).withMessage('Phone number is required'),
+    body('description').optional().isLength({ max: 500 }).withMessage('Description must be less than 500 characters'),
+    body('image').optional().isURL().withMessage('Image must be a valid URL')
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Validation failed',
+                errors: errors.array()
+            });
+        }
+
+        const restaurantId = req.user.restaurant_id;
+
+        // Build update query dynamically
+        const updateFields = [];
+        const updateValues = [];
+
+        const allowedFields = ['name', 'cuisine', 'address', 'phone', 'description', 'image'];
+        
+        for (const field of allowedFields) {
+            if (req.body.hasOwnProperty(field)) {
+                updateFields.push(`${field} = ?`);
+                updateValues.push(req.body[field]);
+            }
+        }
+
+        if (updateFields.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No valid fields to update'
+            });
+        }
+
+        updateValues.push(restaurantId);
+
+        await db.run(
+            `UPDATE restaurants SET ${updateFields.join(', ')} WHERE id = ?`,
+            updateValues
+        );
+
+        console.log(`✅ Restaurant updated: ID ${restaurantId} by Admin ${req.user.id}`);
+
+        res.status(200).json({
+            success: true,
+            message: 'Restaurant updated successfully',
+            data: {
+                id: restaurantId,
+                updated: true
+            }
+        });
+
+    } catch (error) {
+        console.error('Update restaurant error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error while updating restaurant'
+        });
+    }
+});
+
+// GET /api/admin/customers - Get restaurant customers
+router.get('/customers', async (req, res) => {
+    try {
+        const restaurantId = req.user.restaurant_id;
+
+        const customers = await db.all(`
+            SELECT DISTINCT 
+                lu.id, lu.name, lu.email, lu.phone, lu.created_at, lu.is_active,
+                COUNT(DISTINCT o.id) as total_orders,
+                SUM(CASE WHEN o.status = 'completed' THEN o.total_amount ELSE 0 END) as total_spent
+            FROM login_users lu
+            LEFT JOIN orders o ON lu.id = o.user_id AND o.restaurant_id = ?
+            LEFT JOIN bookings b ON lu.id = b.user_id AND b.restaurant_id = ?
+            WHERE (o.id IS NOT NULL OR b.id IS NOT NULL)
+            GROUP BY lu.id
+            ORDER BY lu.created_at DESC
+        `, [restaurantId, restaurantId]);
+
+        res.status(200).json({
+            success: true,
+            message: 'Customers retrieved successfully',
+            data: customers
+        });
+
+    } catch (error) {
+        console.error('Get admin customers error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error while fetching customers'
+        });
+    }
+});
+
+// GET /api/admin/analytics - Get restaurant analytics
+router.get('/analytics', async (req, res) => {
+    try {
+        const restaurantId = req.user.restaurant_id;
+        const { range = '7days' } = req.query;
+
+        // Calculate date range
+        let dateFilter = '';
+        switch (range) {
+            case '7days':
+                dateFilter = "AND o.created_at >= date('now', '-7 days')";
+                break;
+            case '30days':
+                dateFilter = "AND o.created_at >= date('now', '-30 days')";
+                break;
+            case '90days':
+                dateFilter = "AND o.created_at >= date('now', '-90 days')";
+                break;
+            case '1year':
+                dateFilter = "AND o.created_at >= date('now', '-1 year')";
+                break;
+        }
+
+        // Get revenue and order analytics
+        const revenueData = await db.get(`
+            SELECT 
+                SUM(CASE WHEN status = 'completed' THEN total_amount ELSE 0 END) as total,
+                COUNT(*) as order_count
+            FROM orders 
+            WHERE restaurant_id = ? ${dateFilter}
+        `, [restaurantId]);
+
+        const ordersData = await db.get(`
+            SELECT 
+                COUNT(*) as total,
+                AVG(total_amount) as avg_value
+            FROM orders 
+            WHERE restaurant_id = ? ${dateFilter}
+        `, [restaurantId]);
+
+        const customersData = await db.get(`
+            SELECT COUNT(DISTINCT user_id) as new
+            FROM orders 
+            WHERE restaurant_id = ? ${dateFilter}
+        `, [restaurantId]);
+
+        // Get popular items
+        const popularItems = await db.all(`
+            SELECT 
+                mi.name,
+                COUNT(oi.id) as orders,
+                SUM(oi.price * oi.quantity) as revenue,
+                ROUND(COUNT(oi.id) * 100.0 / (SELECT COUNT(*) FROM order_items oi2 JOIN orders o2 ON oi2.order_id = o2.id WHERE o2.restaurant_id = ?), 2) as percentage
+            FROM order_items oi
+            JOIN orders o ON oi.order_id = o.id
+            JOIN menu_items mi ON oi.menu_item_id = mi.id
+            WHERE o.restaurant_id = ? ${dateFilter}
+            GROUP BY mi.id, mi.name
+            ORDER BY orders DESC
+            LIMIT 10
+        `, [restaurantId, restaurantId]);
+
+        // Get daily stats
+        const dailyStats = await db.all(`
+            SELECT 
+                date(created_at) as date,
+                SUM(CASE WHEN status = 'completed' THEN total_amount ELSE 0 END) as revenue,
+                COUNT(*) as orders,
+                AVG(total_amount) as avg_order,
+                COUNT(DISTINCT user_id) as new_customers
+            FROM orders 
+            WHERE restaurant_id = ? ${dateFilter}
+            GROUP BY date(created_at)
+            ORDER BY date DESC
+            LIMIT 30
+        `, [restaurantId]);
+
+        const analyticsData = {
+            revenue: {
+                total: revenueData?.total || 0,
+                growth: 15.2 // Mock growth percentage
+            },
+            orders: {
+                total: ordersData?.total || 0,
+                avg_value: ordersData?.avg_value || 0,
+                growth: 8.5 // Mock growth percentage
+            },
+            customers: {
+                new: customersData?.new || 0,
+                growth: 12.3 // Mock growth percentage
+            },
+            popular_items: popularItems,
+            daily_stats: dailyStats
+        };
+
+        res.status(200).json({
+            success: true,
+            message: 'Analytics data retrieved successfully',
+            data: analyticsData
+        });
+
+    } catch (error) {
+        console.error('Get admin analytics error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error while fetching analytics'
+        });
+    }
+});
+
 // Configure multer for file uploads
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {

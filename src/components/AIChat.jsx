@@ -1,11 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageCircle, Send, Mic, MicOff, X, Minimize2, Maximize2, Volume2, VolumeX, Bot, User } from 'lucide-react';
+import { useCustomerAuth } from '../context/CustomerAuthContext';
+import { useCustomerData } from '../context/CustomerDataContext';
 
 const AIChat = () => {
+  const { user } = useCustomerAuth();
+  const { restaurants } = useCustomerData();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState([
-    { id: 1, text: "Hello! I'm your AI restaurant assistant. I can help you with bookings, menu recommendations, dietary preferences, and answer questions about our restaurants. How can I assist you today?", sender: 'ai', timestamp: new Date() }
+    { id: 1, text: `Hello${user?.name ? ` ${user.name}` : ''}! I'm your AI restaurant assistant powered by advanced AI. I can help you with bookings, menu recommendations, dietary preferences, and answer questions about our ${restaurants.length} partner restaurants. How can I assist you today?`, sender: 'ai', timestamp: new Date() }
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isListening, setIsListening] = useState(false);
@@ -56,13 +60,71 @@ const AIChat = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Enhanced AI responses with context awareness
-  const getContextualResponse = (userMessage) => {
+  // Enhanced AI responses with Gemini API integration
+  const getContextualResponse = async (userMessage) => {
     const message = userMessage.toLowerCase();
+    
+    // Create context about available restaurants
+    const restaurantContext = restaurants.map(r => 
+      `${r.name} (${r.cuisine}) - Rating: ${r.rating}, Address: ${r.address}, Available tables: ${r.available_tables || 0}`
+    ).join('\n');
+    
+    const systemPrompt = `You are an AI restaurant assistant for RestaurantAI platform. You help customers with:
+    - Restaurant recommendations and bookings
+    - Menu suggestions and dietary accommodations
+    - Table reservations and availability
+    - Special occasion planning
+    - Cuisine preferences and food allergies
+    
+    Current available restaurants:
+    ${restaurantContext}
+    
+    User context: ${user?.name ? `Customer name is ${user.name}` : 'Guest user'}
+    
+    Provide helpful, personalized responses about dining experiences. Be friendly, knowledgeable, and focus on helping customers find the perfect dining experience.`;
+
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=AIzaSyBj2JX-nIFFUkAEoCumuoR13f-I6adgcXY`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `${systemPrompt}\n\nUser message: ${userMessage}\n\nPlease provide a helpful response about restaurants, bookings, or dining recommendations.`
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 200,
+          }
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (aiResponse) {
+          return aiResponse.trim();
+        }
+      }
+    } catch (error) {
+      console.error('Gemini API error:', error);
+    }
+
+    // Fallback to contextual responses if Gemini API fails
+    return getLocalContextualResponse(message);
+  };
+
+  // Local fallback responses
+  const getLocalContextualResponse = (message) => {
     
     // Booking related
     if (message.includes('book') || message.includes('reservation') || message.includes('table')) {
-      return "I'd be happy to help you book a table! I can check availability for any of our partner restaurants. Which restaurant interests you, and what date and time would you prefer? I can also suggest the best tables based on your party size.";
+      return `I'd be happy to help you book a table! We have ${restaurants.length} amazing partner restaurants available. Which restaurant interests you, and what date and time would you prefer? I can also suggest the best tables based on your party size.`;
     }
     
     // Menu and food related
@@ -77,7 +139,8 @@ const AIChat = () => {
     
     // Restaurant recommendations
     if (message.includes('recommend') || message.includes('suggest') || message.includes('best')) {
-      return "I'd love to recommend the perfect restaurant for you! To give you the best suggestions, could you tell me: What type of cuisine do you prefer? What's your budget range? Are you looking for a romantic dinner, family meal, or business lunch? Any specific location preferences?";
+      const topRestaurants = restaurants.slice(0, 3).map(r => `${r.name} (${r.cuisine}, ${r.rating}★)`).join(', ');
+      return `I'd love to recommend the perfect restaurant for you! Our top-rated options include: ${topRestaurants}. What type of cuisine do you prefer? What's your budget range? Are you looking for a romantic dinner, family meal, or business lunch?`;
     }
     
     // Pricing and budget
@@ -102,11 +165,11 @@ const AIChat = () => {
     
     // Default responses for general queries
     const defaultResponses = [
-      "I'm here to make your dining experience exceptional! I can help with restaurant recommendations, table bookings, menu exploration, dietary accommodations, and special requests. What would you like to know more about?",
-      "As your AI dining assistant, I have access to real-time information about all our partner restaurants. I can help you discover new cuisines, find the perfect ambiance, and ensure your dietary needs are met. How can I assist you today?",
-      "I'm designed to understand your dining preferences and provide personalized recommendations. Whether you're looking for a quick bite, romantic dinner, or family celebration, I can guide you to the perfect restaurant experience. What are you in the mood for?",
-      "I can help you navigate our extensive network of restaurants with intelligent recommendations based on your preferences, location, budget, and dietary needs. I also provide real-time availability and can assist with special requests. What would you like to explore?",
-      "My goal is to connect you with the perfect dining experience! I can suggest restaurants, help with bookings, explain menu items, accommodate dietary restrictions, and even help plan special celebrations. What dining experience are you looking for today?"
+      `I'm here to make your dining experience exceptional! I can help with restaurant recommendations, table bookings, menu exploration, dietary accommodations, and special requests. We have ${restaurants.length} amazing restaurants to choose from. What would you like to know more about?`,
+      `As your AI dining assistant, I have access to real-time information about all our ${restaurants.length} partner restaurants. I can help you discover new cuisines, find the perfect ambiance, and ensure your dietary needs are met. How can I assist you today?`,
+      `I'm designed to understand your dining preferences and provide personalized recommendations. Whether you're looking for a quick bite, romantic dinner, or family celebration, I can guide you to the perfect restaurant experience from our curated selection. What are you in the mood for?`,
+      `I can help you navigate our extensive network of ${restaurants.length} restaurants with intelligent recommendations based on your preferences, location, budget, and dietary needs. I also provide real-time availability and can assist with special requests. What would you like to explore?`,
+      `My goal is to connect you with the perfect dining experience! I can suggest restaurants, help with bookings, explain menu items, accommodate dietary restrictions, and even help plan special celebrations. What dining experience are you looking for today?`
     ];
     
     return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
@@ -129,7 +192,7 @@ const AIChat = () => {
     }
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (inputMessage.trim() === '') return;
 
     const newMessage = {
@@ -144,11 +207,12 @@ const AIChat = () => {
     setInputMessage('');
     setIsTyping(true);
 
-    // Generate contextual response
-    setTimeout(() => {
+    // Generate contextual response with Gemini AI
+    try {
+      const aiResponseText = await getContextualResponse(currentInput);
       const aiResponse = {
         id: messages.length + 2,
-        text: getContextualResponse(currentInput),
+        text: aiResponseText,
         sender: 'ai',
         timestamp: new Date()
       };
@@ -156,7 +220,17 @@ const AIChat = () => {
       setIsTyping(false);
       
       speakText(aiResponse.text);
-    }, 1000 + Math.random() * 1000);
+    } catch (error) {
+      console.error('Error generating AI response:', error);
+      const fallbackResponse = {
+        id: messages.length + 2,
+        text: "I apologize, but I'm having trouble processing your request right now. Please try again, and I'll do my best to help you with your dining needs!",
+        sender: 'ai',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, fallbackResponse]);
+      setIsTyping(false);
+    }
   };
 
   const handleVoiceInput = () => {

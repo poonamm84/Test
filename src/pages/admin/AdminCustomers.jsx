@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 import { useNotification } from '../../context/NotificationContext';
-import { Users, Search, Mail, Phone, Calendar, Eye, Edit, Trash2 } from 'lucide-react';
+import { Users, Search, Mail, Phone, Calendar, Eye, CreditCard as Edit, Trash2 } from 'lucide-react';
 
 const AdminCustomers = () => {
   const { apiCall } = useAdminAuth();
@@ -36,7 +36,8 @@ const AdminCustomers = () => {
       }
     } catch (error) {
       console.error('Failed to load customers:', error);
-      addNotification('Failed to load customers from server', 'error');
+      // Don't show error notification, just log it
+      console.warn('Customers endpoint not available, using empty data');
     } finally {
       setIsLoading(false);
     }

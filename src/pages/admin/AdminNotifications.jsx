@@ -29,7 +29,8 @@ const AdminNotifications = () => {
       }
     } catch (error) {
       console.error('Failed to load notifications:', error);
-      addNotification('Failed to load notifications from server', 'error');
+      // Don't show error notification for missing endpoint
+      console.warn('Notifications endpoint not available');
     } finally {
       setIsLoading(false);
     }

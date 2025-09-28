@@ -195,13 +195,13 @@ router.put('/restaurants/:id/status', [
             });
         }
 
-        // Update restaurant status
+        // Update restaurant status WITHOUT affecting user data
         await db.run(
             'UPDATE restaurants SET is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
             [is_active, id]
         );
 
-        // Also update the admin user status
+        // Update ONLY the admin user status for this restaurant, not customer data
         await db.run(
             'UPDATE users SET is_active = ? WHERE restaurant_id = ? AND role = "admin"',
             [is_active, id]

@@ -226,16 +226,16 @@ router.get('/analytics', async (req, res) => {
         let dateFilter = '';
         switch (range) {
             case '7days':
-                dateFilter = "AND o.created_at >= date('now', '-7 days')";
+                dateFilter = "AND created_at >= date('now', '-7 days')";
                 break;
             case '30days':
-                dateFilter = "AND o.created_at >= date('now', '-30 days')";
+                dateFilter = "AND created_at >= date('now', '-30 days')";
                 break;
             case '90days':
-                dateFilter = "AND o.created_at >= date('now', '-90 days')";
+                dateFilter = "AND created_at >= date('now', '-90 days')";
                 break;
             case '1year':
-                dateFilter = "AND o.created_at >= date('now', '-1 year')";
+                dateFilter = "AND created_at >= date('now', '-1 year')";
                 break;
         }
 
@@ -268,11 +268,11 @@ router.get('/analytics', async (req, res) => {
                 mi.name,
                 COUNT(oi.id) as orders,
                 SUM(oi.price * oi.quantity) as revenue,
-                ROUND(COUNT(oi.id) * 100.0 / (SELECT COUNT(*) FROM order_items oi2 JOIN orders o2 ON oi2.order_id = o2.id WHERE o2.restaurant_id = ?), 2) as percentage
+                ROUND(COUNT(oi.id) * 100.0 / (SELECT COUNT(*) FROM order_items oi2 JOIN orders o2 ON oi2.order_id = o2.id WHERE o2.restaurant_id = ? ${dateFilter.replace('created_at', 'o2.created_at')}), 2) as percentage
             FROM order_items oi
             JOIN orders o ON oi.order_id = o.id
             JOIN menu_items mi ON oi.menu_item_id = mi.id
-            WHERE o.restaurant_id = ? ${dateFilter}
+            WHERE o.restaurant_id = ? ${dateFilter.replace('created_at', 'o.created_at')}
             GROUP BY mi.id, mi.name
             ORDER BY orders DESC
             LIMIT 10

@@ -487,7 +487,6 @@ router.get('/analytics', async (req, res) => {
         const revenueData = revenueByMonth || [];
         const performanceData = restaurantPerformance || [];
         const statusData = orderStatusDistribution || [];
-        const cuisineData = popularCuisines || [];
 
         // Popular cuisines
         const popularCuisines = await db.all(`
@@ -500,6 +499,8 @@ router.get('/analytics', async (req, res) => {
             GROUP BY r.cuisine
             ORDER BY order_count DESC
         `);
+
+        const cuisineData = popularCuisines || [];
 
         res.status(200).json({
             success: true,

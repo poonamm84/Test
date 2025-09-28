@@ -729,7 +729,8 @@ router.post('/admin-login', adminLoginValidation, handleValidationErrors, async 
         // Generate JWT token
         const token = generateToken(adminUser.id, 'admin', { 
             restaurantId: restaurant.id,
-            adminId: adminId
+            adminId: identifier,
+            restaurant_id: restaurant.id
         });
 
         res.status(200).json({

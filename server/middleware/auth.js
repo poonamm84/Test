@@ -27,6 +27,11 @@ const authenticateToken = async (req, res, next) => {
                 'SELECT id, name, email, phone, role, restaurant_id, admin_id FROM users WHERE id = ? AND is_active = 1',
                 [decoded.userId]
             );
+            
+            // For admin users, ensure restaurant_id is set from token if not in user record
+            if (user && user.role === 'admin' && !user.restaurant_id && decoded.restaurantId) {
+                user.restaurant_id = decoded.restaurantId;
+            }
         }
 
         if (!user) {

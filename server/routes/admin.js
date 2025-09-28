@@ -9,6 +9,21 @@ const fs = require('fs');
 
 const router = express.Router();
 
+// Middleware to ensure admin access and set restaurant_id
+router.use(authenticateToken);
+router.use(authorizeRole(['admin']));
+
+// Middleware to ensure restaurant_id is available
+router.use((req, res, next) => {
+    if (!req.user || !req.user.restaurant_id) {
+        return res.status(403).json({
+            success: false,
+            message: 'Restaurant ID not found in user context'
+        });
+    }
+    next();
+});
+
 // GET /api/admin/notifications - Get restaurant notifications
 router.get('/notifications', async (req, res) => {
     try {
@@ -341,10 +356,6 @@ const upload = multer({
         }
     }
 });
-
-// Middleware to ensure admin access
-router.use(authenticateToken);
-router.use(authorizeRole(['admin']));
 
 // GET /api/admin/tables - Get restaurant tables
 router.get('/tables', async (req, res) => {

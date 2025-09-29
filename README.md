@@ -210,3 +210,13 @@ npm run preview
 ---
 
 **Note**: The Node.js backend is recommended for production use as it includes more advanced features like OTP verification, comprehensive validation, and better error handling.
+
+## 🌍 Multi-Currency Support
+
+The platform supports multiple currencies with automatic detection:
+- **USD ($)** - Default for most restaurants
+- **INR (₹)** - Automatically used for Indian restaurants
+- **EUR (€)** - European restaurants
+- **GBP (£)** - UK restaurants
+
+Currency is automatically detected based on restaurant cuisine type and formatted according to local conventions.

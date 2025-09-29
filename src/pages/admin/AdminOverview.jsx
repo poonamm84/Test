@@ -15,6 +15,7 @@ import {
   Plus,
   Eye
 } from 'lucide-react';
+import { formatCurrency } from '../../utils/currency';
 
 const AdminOverview = () => {
   const { apiCall } = useAdminAuth();

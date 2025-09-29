@@ -4,6 +4,7 @@ import { useCustomerData } from '../context/CustomerDataContext';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { useNotification } from '../context/NotificationContext';
 import { ArrowLeft, Plus, Minus, ShoppingCart, Star, Leaf, Heart, Filter } from 'lucide-react';
+import { formatCurrency, detectCurrency } from '../utils/currency';
 
 const MenuView = () => {
   const { id } = useParams();
@@ -87,6 +88,9 @@ const MenuView = () => {
       </div>
     );
   }
+
+  // Detect currency based on restaurant cuisine
+  const currency = detectCurrency(restaurant.cuisine);
 
   const categories = ['all', ...new Set(menuItems.map(item => item.category))];
   const dietaryOptions = ['all', 'vegetarian', 'gluten-free', 'healthy'];
@@ -234,7 +238,7 @@ const MenuView = () => {
                   className="w-full h-40 md:h-48 object-cover"
                 />
                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full">
-                  <span className="font-bold text-green-600">${item.price}</span>
+                  <span className="font-bold text-green-600">{formatCurrency(item.price, currency)}</span>
                 </div>
                 
                 {item.dietary && (

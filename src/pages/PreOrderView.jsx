@@ -4,6 +4,7 @@ import { useCustomerData } from '../context/CustomerDataContext';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { useNotification } from '../context/NotificationContext';
 import { ArrowLeft, Trash2, Plus, Minus, ShoppingCart, Calendar, Clock } from 'lucide-react';
+import { formatCurrency, detectCurrency } from '../utils/currency';
 
 const PreOrderView = () => {
   const { id } = useParams();
@@ -25,6 +26,8 @@ const PreOrderView = () => {
     return <div>Restaurant not found</div>;
   }
 
+  // Get currency for the restaurant
+  const currency = detectCurrency(restaurant.cuisine);
   const groupedItems = restaurantCartItems.reduce((acc, item) => {
     const key = `${item.id}-${item.name}`;
     if (acc[key]) {
@@ -154,7 +157,7 @@ const PreOrderView = () => {
                     
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                      <p className="text-green-600 font-medium">${item.price.toFixed(2)}</p>
+                      <p className="text-green-600 font-medium">{formatCurrency(item.price, currency)}</p>
                     </div>
                     
                     <div className="flex items-center space-x-3">
@@ -174,7 +177,7 @@ const PreOrderView = () => {
                     </div>
                     
                     <div className="text-right">
-                      <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="font-semibold">{formatCurrency(item.price * item.quantity, currency)}</p>
                     </div>
                     
                     <button
@@ -264,22 +267,22 @@ const PreOrderView = () => {
               <div className="space-y-3 mb-4">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>{formatCurrency(subtotal, currency)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax (8%)</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>{formatCurrency(tax, currency)}</span>
                 </div>
                 {deliveryFee > 0 && (
                   <div className="flex justify-between">
                     <span>Delivery Fee</span>
-                    <span>${deliveryFee.toFixed(2)}</span>
+                    <span>{formatCurrency(deliveryFee, currency)}</span>
                   </div>
                 )}
                 <div className="border-t pt-3">
                   <div className="flex justify-between font-semibold text-lg">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>{formatCurrency(total, currency)}</span>
                   </div>
                 </div>
               </div>

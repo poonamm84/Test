@@ -234,4 +234,71 @@ router.put('/:id/cancel', authenticateToken, authorizeRole(['customer']), async 
     }
 });
 
+// PUT /api/bookings/:id/status - Update booking status (for admin use)
+router.put('/:id/status', authenticateToken, authorizeRole(['admin']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        const restaurantId = req.user.restaurant_id;
+
+        if (!['confirmed', 'completed', 'cancelled', 'no-show'].includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid status'
+            });
+        }
+
+        // Get booking details and verify it belongs to admin's restaurant
+        const booking = await db.get(
+            'SELECT id, table_id, status, user_id FROM bookings WHERE id = ? AND restaurant_id = ?',
+            [id, restaurantId]
+        );
+
+        if (!booking) {
+            return res.status(404).json({
+                success: false,
+                message: 'Booking not found'
+            });
+        }
+
+        // Update booking status
+        await db.run(
+            'UPDATE bookings SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            [status, id]
+        );
+
+        // Update table status based on booking status
+        let tableStatus = 'available';
+        if (status === 'confirmed') {
+            tableStatus = 'reserved';
+        } else if (status === 'completed' || status === 'cancelled' || status === 'no-show') {
+            tableStatus = 'available';
+        }
+
+        await db.run(
+            'UPDATE restaurant_tables SET status = ? WHERE id = ?',
+            [tableStatus, booking.table_id]
+        );
+
+        console.log(`✅ Booking status updated: Booking ID ${id} changed to ${status} by Admin ${req.user.id}`);
+
+        res.status(200).json({
+            success: true,
+            message: 'Booking status updated successfully',
+            data: {
+                bookingId: id,
+                newStatus: status,
+                updated: true
+            }
+        });
+
+    } catch (error) {
+        console.error('Update booking status error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error while updating booking status'
+        });
+    }
+});
+
 module.exports = router;

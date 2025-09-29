@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Calendar, Clock, Users, ArrowLeft, Check, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
+import { useNotification } from '../context/NotificationContext';
 
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { apiCall } = useCustomerAuth();
+  const { addNotification } = useNotification();
   const [bookingData, setBookingData] = useState({
     date: '',
     time: '',
@@ -180,7 +182,7 @@ function App() {
       });
 
       if (result && result.success) {
-        alert(`Table booked successfully!\n\nTable: ${selectedTable.name}\nDate: ${bookingData.date}\nTime: ${bookingData.time}\nGuests: ${bookingData.guests}`);
+        addNotification(`Table booked successfully! Table ${selectedTable.table_number} for ${bookingData.guests} guests on ${bookingData.date} at ${bookingData.time}`, 'success');
           
         // Reset form and navigate back
         setShowTableCards(true);
@@ -196,12 +198,17 @@ function App() {
           
         // Refresh tables to update status
         loadTables();
+        
+        // Navigate back to dashboard after successful booking
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 2000);
       } else {
-        alert('Failed to book table. Please try again.');
+        addNotification('Failed to book table. Please try again.', 'error');
       }
     } catch (error) {
       console.error('Booking error:', error);
-      alert('Failed to book table: ' + error.message);
+      addNotification('Failed to book table: ' + error.message, 'error');
     }
   };
 

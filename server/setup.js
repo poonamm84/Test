@@ -271,7 +271,9 @@ async function setupDatabase() {
         const restaurants = [
             [1, 'The Golden Spoon', 'Fine Dining', 4.8, 'https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg', '123 Gourmet Street, Downtown', '+1 (555) 123-4567', 'Exquisite fine dining experience with contemporary cuisine', 'GS001', adminPassword],
             [2, 'Sakura Sushi', 'Japanese', 4.6, 'https://images.pexels.com/photos/357756/pexels-photo-357756.jpeg', '456 Zen Garden Ave, Midtown', '+1 (555) 234-5678', 'Authentic Japanese cuisine with fresh sushi and sashimi', 'SS002', adminPassword],
-            [3, 'Mama\'s Italian', 'Italian', 4.7, 'https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg', '789 Pasta Lane, Little Italy', '+1 (555) 345-6789', 'Traditional Italian flavors in a cozy family atmosphere', 'MI003', adminPassword]
+            [3, 'Mama\'s Italian', 'Italian', 4.7, 'https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg', '789 Pasta Lane, Little Italy', '+1 (555) 345-6789', 'Traditional Italian flavors in a cozy family atmosphere', 'MI003', adminPassword],
+            [4, 'Spice Garden', 'Indian', 4.5, 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg', '456 Curry Street, Spice District', '+91 98765 43210', 'Authentic Indian cuisine with traditional spices and flavors', 'SG004', adminPassword],
+            [5, 'Maharaja Palace', 'Indian', 4.6, 'https://images.pexels.com/photos/5560763/pexels-photo-5560763.jpeg', '789 Palace Road, Heritage Quarter', '+91 87654 32109', 'Royal Indian dining experience with traditional recipes', 'MP005', adminPassword]
         ];
 
         const restaurantStmt = await prepareStatement(`
@@ -296,6 +298,8 @@ async function setupDatabase() {
             ['Golden Spoon Admin', 'admin@goldenspoon.com', null, adminPassword, 'admin', 1, 'GS001'],
             ['Sakura Admin', 'admin@sakurasushi.com', null, adminPassword, 'admin', 2, 'SS002'],
             ['Italian Admin', 'admin@mamasitalian.com', null, adminPassword, 'admin', 3, 'MI003'],
+            ['Spice Garden Admin', 'admin@spicegarden.com', null, adminPassword, 'admin', 4, 'SG004'],
+            ['Maharaja Admin', 'admin@maharajapalace.com', null, adminPassword, 'admin', 5, 'MP005'],
             ['Platform Owner', 'owner@restaurantai.com', null, superAdminPassword, 'superadmin', null, null]
         ];
 
@@ -336,7 +340,21 @@ async function setupDatabase() {
             [3, 'Fettuccine Alfredo', 'Pasta', 'Italian', 19.99, 'Creamy parmesan sauce with fresh fettuccine', 'https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg', 'vegetarian', 0, 1],
             [3, 'Tiramisu', 'Desserts', 'Italian', 12.99, 'Classic Italian dessert with coffee and mascarpone', 'https://images.pexels.com/photos/6880219/pexels-photo-6880219.jpeg', 'vegetarian', 0, 1],
             [3, 'Osso Buco', 'Mains', 'Italian', 34.99, 'Braised veal shanks with risotto milanese', 'https://images.pexels.com/photos/1279330/pexels-photo-1279330.jpeg', '', 1, 1],
-            [3, 'Bruschetta', 'Starters', 'Italian', 12.99, 'Grilled bread with tomatoes, garlic, and basil', 'https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg', 'vegetarian', 0, 1]
+            [3, 'Bruschetta', 'Starters', 'Italian', 12.99, 'Grilled bread with tomatoes, garlic, and basil', 'https://images.pexels.com/photos/315755/pexels-photo-315755.jpeg', 'vegetarian', 0, 1],
+            
+            // Spice Garden - Indian
+            [4, 'Butter Chicken', 'Mains', 'Indian', 18.99, 'Tender chicken in rich tomato and butter sauce', 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg', '', 1, 1],
+            [4, 'Biryani', 'Mains', 'Indian', 16.99, 'Fragrant basmati rice with spices and meat', 'https://images.pexels.com/photos/5560763/pexels-photo-5560763.jpeg', '', 0, 1],
+            [4, 'Samosa', 'Starters', 'Indian', 6.99, 'Crispy pastry filled with spiced potatoes', 'https://images.pexels.com/photos/5560763/pexels-photo-5560763.jpeg', 'vegetarian', 0, 1],
+            [4, 'Dal Tadka', 'Mains', 'Indian', 12.99, 'Yellow lentils tempered with spices', 'https://images.pexels.com/photos/5560763/pexels-photo-5560763.jpeg', 'vegetarian,healthy', 0, 1],
+            [4, 'Gulab Jamun', 'Desserts', 'Indian', 8.99, 'Sweet milk dumplings in sugar syrup', 'https://images.pexels.com/photos/5560763/pexels-photo-5560763.jpeg', 'vegetarian', 0, 1],
+            
+            // Maharaja Palace - Indian
+            [5, 'Tandoori Chicken', 'Mains', 'Indian', 22.99, 'Marinated chicken cooked in tandoor oven', 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg', 'gluten-free', 1, 1],
+            [5, 'Paneer Makhani', 'Mains', 'Indian', 17.99, 'Cottage cheese in creamy tomato sauce', 'https://images.pexels.com/photos/5560763/pexels-photo-5560763.jpeg', 'vegetarian', 0, 1],
+            [5, 'Naan Bread', 'Sides', 'Indian', 4.99, 'Fresh baked Indian flatbread', 'https://images.pexels.com/photos/5560763/pexels-photo-5560763.jpeg', 'vegetarian', 0, 1],
+            [5, 'Masala Chai', 'Beverages', 'Indian', 3.99, 'Traditional spiced tea with milk', 'https://images.pexels.com/photos/5560763/pexels-photo-5560763.jpeg', 'vegetarian', 0, 1],
+            [5, 'Kulfi', 'Desserts', 'Indian', 7.99, 'Traditional Indian ice cream with cardamom', 'https://images.pexels.com/photos/5560763/pexels-photo-5560763.jpeg', 'vegetarian', 0, 1]
         ];
 
         const menuStmt = await prepareStatement(`
@@ -374,7 +392,19 @@ async function setupDatabase() {
             [3, 1, 4, 'available', 'standard', 'Family style', null, 100, 200],
             [3, 2, 2, 'available', 'standard', 'Romantic corner', null, 200, 200],
             [3, 3, 8, 'available', 'premium', 'Large family table', null, 300, 200],
-            [3, 4, 6, 'available', 'standard', 'Garden view', null, 250, 250]
+            [3, 4, 6, 'available', 'standard', 'Garden view', null, 250, 250],
+            
+            // Spice Garden tables
+            [4, 1, 4, 'available', 'standard', 'Traditional seating', null, 100, 250],
+            [4, 2, 6, 'available', 'premium', 'Private dining room', null, 200, 250],
+            [4, 3, 8, 'available', 'premium', 'Family celebration table', null, 300, 250],
+            [4, 4, 2, 'available', 'standard', 'Intimate corner', null, 150, 300],
+            
+            // Maharaja Palace tables
+            [5, 1, 6, 'available', 'premium', 'Royal dining experience', null, 100, 300],
+            [5, 2, 4, 'available', 'standard', 'Traditional setup', null, 200, 300],
+            [5, 3, 8, 'available', 'premium', 'Palace banquet table', null, 300, 300],
+            [5, 4, 2, 'available', 'standard', 'Cozy corner', null, 250, 350]
         ];
 
         const tableStmt = await prepareStatement(`

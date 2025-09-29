@@ -130,6 +130,7 @@ const AdminBookings = () => {
         setTimeout(() => loadBookings(), 1000);
       }
     } catch (error) {
+      console.error('Update booking status error:', error);
       addNotification('Failed to update booking status', 'error');
     }
   };
@@ -270,30 +271,19 @@ const AdminBookings = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(booking.status)}`}>
-                      {booking.status}
-                    </span>
+                    <select
+                      value={booking.status}
+                      onChange={(e) => updateBookingStatus(booking.id, e.target.value)}
+                      className={`text-xs font-semibold rounded-full px-2 py-1 border-0 ${getStatusColor(booking.status)}`}
+                    >
+                      <option value="confirmed">Confirmed</option>
+                      <option value="completed">Completed</option>
+                      <option value="cancelled">Cancelled</option>
+                      <option value="no-show">No Show</option>
+                    </select>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center space-x-2">
-                      {booking.status === 'confirmed' && (
-                        <>
-                          <button
-                            onClick={() => updateBookingStatus(booking.id, 'completed')}
-                            className="text-green-600 hover:text-green-900"
-                            title="Mark as completed"
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => updateBookingStatus(booking.id, 'cancelled')}
-                            className="text-red-600 hover:text-red-900"
-                            title="Cancel booking"
-                          >
-                            <XCircle className="w-4 h-4" />
-                          </button>
-                        </>
-                      )}
                       <button className="text-blue-600 hover:text-blue-900" title="View details">
                         <Eye className="w-4 h-4" />
                       </button>

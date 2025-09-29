@@ -137,6 +137,32 @@ export const CustomerDataProvider = ({ children }) => {
             tables: [],
             total_tables: 18,
             available_tables: 10
+          },
+          {
+            id: 4,
+            name: 'Spice Garden',
+            cuisine: 'Indian',
+            rating: 4.5,
+            image: 'https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg',
+            address: '456 Curry Street, Spice District',
+            phone: '+91 98765 43210',
+            description: 'Authentic Indian cuisine with traditional spices and flavors',
+            tables: [],
+            total_tables: 16,
+            available_tables: 9
+          },
+          {
+            id: 5,
+            name: 'Maharaja Palace',
+            cuisine: 'Indian',
+            rating: 4.6,
+            image: 'https://images.pexels.com/photos/5560763/pexels-photo-5560763.jpeg',
+            address: '789 Palace Road, Heritage Quarter',
+            phone: '+91 87654 32109',
+            description: 'Royal Indian dining experience with traditional recipes',
+            tables: [],
+            total_tables: 14,
+            available_tables: 8
           }
         ]);
       }

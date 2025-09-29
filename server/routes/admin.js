@@ -183,6 +183,76 @@ router.put('/restaurant', [
     }
 });
 
+router.put('/bookings/:id/status', [
+    body('status').isIn(['confirmed', 'completed', 'cancelled', 'no-show']).withMessage('Invalid status')
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Validation failed',
+                errors: errors.array()
+            });
+        }
+
+        const { id } = req.params;
+        const { status } = req.body;
+        const restaurantId = req.user.restaurant_id;
+
+        // Check if booking exists and belongs to admin's restaurant
+        const existingBooking = await db.get(
+            'SELECT id, status as current_status, table_id FROM bookings WHERE id = ? AND restaurant_id = ?',
+            [id, restaurantId]
+        );
+
+        if (!existingBooking) {
+            return res.status(404).json({
+                success: false,
+                message: 'Booking not found'
+            });
+        }
+
+        // Update booking status
+        await db.run(
+            'UPDATE bookings SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+            [status, id]
+        );
+
+        // Update table status based on booking status
+        let tableStatus = 'available';
+        if (status === 'confirmed') {
+            tableStatus = 'reserved';
+        } else if (status === 'completed' || status === 'cancelled' || status === 'no-show') {
+            tableStatus = 'available';
+        }
+
+        await db.run(
+            'UPDATE restaurant_tables SET status = ? WHERE id = ?',
+            [tableStatus, existingBooking.table_id]
+        );
+
+        console.log(`✅ Booking status updated: Booking ${id} changed to ${status} by Admin ${req.user.id}`);
+
+        res.status(200).json({
+            success: true,
+            message: 'Booking status updated successfully',
+            data: {
+                bookingId: id,
+                newStatus: status,
+                updated: true
+            }
+        });
+
+    } catch (error) {
+        console.error('Update booking status error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error while updating booking status'
+        });
+    }
+});
+
 // GET /api/admin/customers - Get restaurant customers
 router.get('/customers', async (req, res) => {
     try {

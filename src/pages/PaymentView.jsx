@@ -4,6 +4,7 @@ import { useCustomerData } from '../context/CustomerDataContext';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { useNotification } from '../context/NotificationContext';
 import { CreditCard, Lock, CheckCircle, ArrowLeft } from 'lucide-react';
+import { formatCurrency, detectCurrency } from '../utils/currency';
 
 const PaymentView = () => {
   const navigate = useNavigate();
@@ -36,6 +37,8 @@ const PaymentView = () => {
     }
   }, [navigate]);
 
+  // Get currency for the restaurant
+  const currency = orderData ? detectCurrency(orderData.restaurant.cuisine) : 'USD';
   const formatCardNumber = (value) => {
     const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
     const matches = v.match(/\d{4,16}/g);
@@ -81,13 +84,26 @@ const PaymentView = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate required fields
+    if (!paymentData.cardNumber || !paymentData.expiryDate || !paymentData.cvv || !paymentData.cardholderName) {
+      addNotification('Please fill in all payment details', 'error');
+      return;
+    }
+    
+    if (!paymentData.billingAddress.street || !paymentData.billingAddress.city || 
+        !paymentData.billingAddress.state || !paymentData.billingAddress.zipCode) {
+      addNotification('Please fill in all billing address fields', 'error');
+      return;
+    }
+
     setIsProcessing(true);
 
     try {
       // Create order in backend
       const orderItems = orderData.items.map(item => ({
         menuItemId: item.id,
-        quantity: item.quantity,
+        quantity: item.quantity
       }));
 
       const result = await apiCall('/orders', {
@@ -117,6 +133,7 @@ const PaymentView = () => {
         throw new Error(result?.message || 'Order creation failed');
       }
     } catch (error) {
+      console.error('Payment error:', error);
       setIsProcessing(false);
       addNotification('Payment failed: ' + error.message, 'error');
     }
@@ -299,7 +316,7 @@ const PaymentView = () => {
                 ) : (
                   <>
                     <Lock className="w-5 h-5" />
-                    <span>Pay ${orderData.pricing.total.toFixed(2)}</span>
+                    <span>Pay {formatCurrency(orderData.pricing.total, currency)}</span>
                   </>
                 )}
               </button>
@@ -325,7 +342,7 @@ const PaymentView = () => {
               </p>
               {orderData.orderDetails.scheduledTime && (
                 <p className="text-sm text-gray-600">
-                  Scheduled: {new Date(orderData.orderDetails.scheduledTime).toLocaleString()}
+                  <strong>Order Total:</strong> {formatCurrency(orderData.pricing.total, currency)}
                 </p>
               )}
             </div>
@@ -337,7 +354,7 @@ const PaymentView = () => {
                     <p className="font-medium">{item.name}</p>
                     <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
                   </div>
-                  <span className="font-semibold">${(item.price * item.quantity).toFixed(2)}</span>
+                  <span className="font-semibold">{formatCurrency(item.price * item.quantity, currency)}</span>
                 </div>
               ))}
             </div>
@@ -345,22 +362,22 @@ const PaymentView = () => {
             <div className="border-t pt-4 space-y-2">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span>${orderData.pricing.subtotal.toFixed(2)}</span>
+                <span>{formatCurrency(orderData.pricing.subtotal, currency)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Tax</span>
-                <span>${orderData.pricing.tax.toFixed(2)}</span>
+                <span>{formatCurrency(orderData.pricing.tax, currency)}</span>
               </div>
               {orderData.pricing.deliveryFee > 0 && (
                 <div className="flex justify-between">
                   <span>Delivery Fee</span>
-                  <span>${orderData.pricing.deliveryFee.toFixed(2)}</span>
+                  <span>{formatCurrency(orderData.pricing.deliveryFee, currency)}</span>
                 </div>
               )}
               <div className="border-t pt-2">
                 <div className="flex justify-between font-semibold text-lg">
                   <span>Total</span>
-                  <span>${orderData.pricing.total.toFixed(2)}</span>
+                  <span>{formatCurrency(orderData.pricing.total, currency)}</span>
                 </div>
               </div>
             </div>

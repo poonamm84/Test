@@ -258,10 +258,10 @@ const AdminAnalytics = () => {
                     {day.orders}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${day.revenue}
+                    {formatCurrency(day.revenue)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${day.avg_order}
+                    {formatCurrency(day.avg_order)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {day.new_customers}

@@ -164,7 +164,7 @@ const SuperAdminOverview = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Platform Revenue</p>
-              <p className="text-2xl font-bold text-gray-900">${stats.totalRevenue || 0}</p>
+              <p className="text-2xl font-bold text-gray-900">{formatCurrency(stats.totalRevenue || 0)}</p>
               <div className="flex items-center mt-2">
                 <ArrowUp className="w-4 h-4 text-green-500" />
                 <span className="text-sm text-green-600 ml-1">+22% growth</span>

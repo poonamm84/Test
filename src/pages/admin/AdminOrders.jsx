@@ -12,6 +12,7 @@ import {
   Truck,
   XCircle
 } from 'lucide-react';
+import { formatCurrency } from '../../utils/currency';
 
 const AdminOrders = () => {
   const { apiCall } = useAdminAuth();
